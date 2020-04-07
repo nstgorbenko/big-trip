@@ -1,5 +1,5 @@
 import {createDayTemplate} from "./components/day.js";
-import {createEventFormTemplate} from "./components/event-form.js";
+import {createEventEditTemplate} from "./components/event-edit.js";
 import {createEventTemplate} from "./components/event.js";
 import {createFilterTemplate} from "./components/filter.js";
 import {createMenuTemplate} from "./components/menu.js";
@@ -8,7 +8,7 @@ import {createTripCostTemplate} from "./components/trip-cost.js";
 import {createTripDaysTemplate} from "./components/trip-days.js";
 import {createTripInfoTemplate} from "./components/trip-info.js";
 
-const EVENTS_NUMBER = 3;
+const EVENT_COUNT = 3;
 
 const render = (container, template, place = `beforeend`) => {
   container.insertAdjacentHTML(place, template);
@@ -28,16 +28,16 @@ render(tripViewHeadingElement, createMenuTemplate(), `afterend`);
 render(tripControlsElement, createFilterTemplate());
 render(tripEventsElement, createSortTemplate());
 
-render(tripEventsElement, createEventFormTemplate());
+render(tripEventsElement, createEventEditTemplate());
 render(tripEventsElement, createTripDaysTemplate());
 
 const tripDaysElement = tripEventsElement.querySelector(`.trip-days`);
 
 render(tripDaysElement, createDayTemplate());
 
-const tripEventsList = tripDaysElement.querySelector(`.trip-events__list`);
+const tripEventsListElement = tripDaysElement.querySelector(`.trip-events__list`);
 
-for (let i = 0; i < EVENTS_NUMBER; i++) {
-  render(tripEventsList, createEventTemplate());
+for (let i = 0; i < EVENT_COUNT; i++) {
+  render(tripEventsListElement, createEventTemplate());
 }
 
