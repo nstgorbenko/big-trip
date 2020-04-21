@@ -1,8 +1,8 @@
-import {DESTINATION_ITEMS, eventGroups, eventToOffers, eventTypesWithPrepositions} from "../const.js";
-import {formatDateToEventEdit} from "../utils.js";
+import {eventGroups, eventTypesWithPrepositions} from "../const.js";
+import {formatDateToEventEdit} from "../utils/date/formatters.js";
 
-const createEventsTypeMarkup = (eventTypeList) => {
-  return eventTypeList.map((eventType) => {
+const createEventsTypeMarkup = (eventTypes) => {
+  return eventTypes.map((eventType) => {
     const lowercaseEventType = eventType.toLowerCase();
 
     return (
@@ -14,29 +14,29 @@ const createEventsTypeMarkup = (eventTypeList) => {
   }).join(`\n`);
 };
 
-const createEventGroupsMarkup = (groupList) => {
-  const groups = Object.keys(groupList);
+const createEventGroupsMarkup = (groups) => {
+  const groupNames = Object.keys(groups);
 
-  return groups.map((group) => {
+  return groupNames.map((groupName) => {
     return (
       `<fieldset class="event__type-group">
-        <legend class="visually-hidden">${group}</legend>
-        ${createEventsTypeMarkup(groupList[group])}
+        <legend class="visually-hidden">${groupName}</legend>
+        ${createEventsTypeMarkup(groups[groupName])}
       </fieldset>`
     );
   }).join(`\n`);
 };
 
-const createDestinationsMarkup = (destinationList) => {
-  return destinationList.map((destination) => {
+const createDestinationsMarkup = (destinations) => {
+  return destinations.map((destination) => {
     return (
       `<option value="${destination}"></option>`
     );
   }).join(`\n`);
 };
 
-const createOffersMarkup = (offersList, checkedOffers) => {
-  return offersList.map((offer) => {
+const createOffersMarkup = (offers, checkedOffers) => {
+  return offers.map((offer) => {
     const {id, title, price} = offer;
     const isChecked = checkedOffers.filter((checkedOffer) => checkedOffer.id === id).length > 0;
 
@@ -53,19 +53,19 @@ const createOffersMarkup = (offersList, checkedOffers) => {
   }).join(`\n`);
 };
 
-const createPhotosMarkup = (photosList) => {
-  return photosList.map((photo) => {
+const createPhotosMarkup = (photos) => {
+  return photos.map((photo) => {
     return (
-      `<img class="event__photo" src="${photo}" alt="Event photo"></img>`
+      `<img class="event__photo" src="${photo.src}" alt="${photo.description}"></img>`
     );
   }).join(`\n`);
 };
 
-export const createEventEditTemplate = (event) => {
-  const {type, destination, start, end, price, offers, info} = event;
+export const createTripEventEditTemplate = (tripEvent) => {
+  const {type, destination, destinations, start, end, basePrice, checkedOffers, offers, isFavourite} = tripEvent;
 
   const eventGroupsMarkup = createEventGroupsMarkup(eventGroups);
-  const destinationsMarkup = createDestinationsMarkup(DESTINATION_ITEMS);
+  const destinationsMarkup = createDestinationsMarkup(destinations);
 
   const isType = !!type;
 
@@ -74,11 +74,13 @@ export const createEventEditTemplate = (event) => {
   const isEndTime = !!start;
   const endTime = isEndTime ? formatDateToEventEdit(end) : ``;
 
-  const description = info[`description`];
-  const photos = info[`photos`];
+  const description = destination.description;
+  const photos = destination.photos;
 
-  const isOffersType = !!offers;
+  const isOffersType = checkedOffers.length > 0;
   const isInfo = !!description;
+
+  const favourite = isFavourite ? `checked` : ``;
 
   return (
     `<form class="trip-events__item  event  event--edit" action="#" method="post">
@@ -99,7 +101,7 @@ export const createEventEditTemplate = (event) => {
           <label class="event__label  event__type-output" for="event-destination-1">
           ${isType ? eventTypesWithPrepositions[type] : `Taxi to`}
           </label>
-          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination}" list="destination-list-1">
+          <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
           <datalist id="destination-list-1">
             ${destinationsMarkup}
           </datalist>
@@ -122,13 +124,13 @@ export const createEventEditTemplate = (event) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${price}">
+          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
         <button class="event__reset-btn" type="reset">Cancel</button>
 
-        <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" checked>
+        <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favourite}>
         <label class="event__favorite-btn" for="event-favorite-1">
           <span class="visually-hidden">Add to favorite</span>
           <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -147,7 +149,7 @@ export const createEventEditTemplate = (event) => {
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-          ${createOffersMarkup(eventToOffers[type], offers)}
+          ${createOffersMarkup(offers, checkedOffers)}
         </div>
       </section>` : ``}
 

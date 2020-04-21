@@ -1,4 +1,4 @@
-import {formatDay} from "../utils.js";
+import {formatDay} from "../utils/date/formatters.js";
 
 export const createDayTemplate = (day, index) => {
   const formattedDay = formatDay(day);

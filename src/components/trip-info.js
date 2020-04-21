@@ -1,32 +1,29 @@
-import {formatDateToTripInfo} from "../utils.js";
+import {formatDateToTripInfo} from "../utils/date/formatters.js";
 
-const getArrayDiff = (major, minor) => major.filter((i) => minor.indexOf(i) < 0);
+const getDiffItem = (major, minor) => major.filter((i) => minor.indexOf(i) < 0);
 
-const getTripTitle = (events) => {
-  const startPointName = events[0].destination;
-  const endPointName = events[events.length - 1].destination;
-  const allPoints = Array.from(events.reduce((pointsList, event) => pointsList.add(event.destination), new Set()));
-  let title = ``;
+const getTripTitle = (tripEvents) => {
+  const startPointName = tripEvents[0].destination.name;
+  const endPointName = tripEvents[tripEvents.length - 1].destination.name;
+  const allPoints = Array.from(tripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
 
   if (allPoints.length === 1) {
-    title = startPointName;
+    return startPointName;
   } else if (allPoints.length === 2) {
-    title = `${startPointName} &mdash; ${endPointName}`;
+    return `${startPointName} &mdash; ${endPointName}`;
   } else if (allPoints.length === 3 && startPointName !== endPointName) {
-    const middle = getArrayDiff(allPoints, [startPointName, endPointName])[0];
-    title = `${startPointName} &mdash; ${middle} &mdash; ${endPointName}`;
-  } else {
-    title = `${startPointName} &mdash; ... &mdash; ${endPointName}`;
+    const middle = getDiffItem(allPoints, [startPointName, endPointName])[0];
+    return `${startPointName} &mdash; ${middle} &mdash; ${endPointName}`;
   }
 
-  return title;
+  return `${startPointName} &mdash; ... &mdash; ${endPointName}`;
 };
 
-const getTripDates = (events) => {
-  const startPointDate = formatDateToTripInfo(events[0].start);
+const getTripDates = (tripEvents) => {
+  const startPointDate = formatDateToTripInfo(tripEvents[0].start);
   const startPointMonth = startPointDate.slice(0, 3);
 
-  const endPointDate = formatDateToTripInfo(events[events.length - 1].end);
+  const endPointDate = formatDateToTripInfo(tripEvents[tripEvents.length - 1].end);
   const endPointMonth = endPointDate.slice(0, 3);
   const endPointDay = endPointDate.slice(-2);
 
@@ -39,9 +36,9 @@ const getTripDates = (events) => {
   return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDate}`;
 };
 
-export const createTripInfoTemplate = (eventsList) => {
-  const tripTitle = getTripTitle(eventsList);
-  const tripDates = getTripDates(eventsList);
+export const createTripInfoTemplate = (tripEvents) => {
+  const tripTitle = getTripTitle(tripEvents);
+  const tripDates = getTripDates(tripEvents);
 
   return (
     `<section class="trip-main__trip-info  trip-info">
