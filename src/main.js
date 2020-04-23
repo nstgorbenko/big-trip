@@ -7,6 +7,8 @@ import {createTripDaysTemplate} from "./components/trip-days.js";
 import {createTripEventEditTemplate} from "./components/trip-event-edit.js";
 import {createTripEventTemplate} from "./components/trip-event.js";
 import {createTripInfoTemplate} from "./components/trip-info.js";
+import {DESTINATION_ITEMS} from "./mock/destination.js";
+import {eventToOffers} from "./mock/offers.js";
 import {formatDateToDayDatetime} from "./utils/date/formatters.js";
 import {generateEvents} from "./mock/event.js";
 import {render} from "./utils/dom.js";
@@ -15,7 +17,7 @@ const EVENT_COUNT = 20;
 
 const groupEventsByDays = (someEvents, date) => {
   return someEvents.reduce((days, currentDay) => {
-    let someDate = formatDateToDayDatetime(currentDay[date]);
+    const someDate = formatDateToDayDatetime(currentDay[date]);
 
     if (!days.hasOwnProperty(someDate)) {
       days[someDate] = [];
@@ -56,7 +58,7 @@ render(tripInfoElement, createTripCostTemplate(tripEvents));
 render(tripViewHeadingElement, createMenuTemplate(), `afterend`);
 render(tripControlsElement, createFilterTemplate());
 render(tripEventsElement, createSortTemplate());
-render(tripEventsElement, createTripEventEditTemplate(tripEvents.shift()));
+render(tripEventsElement, createTripEventEditTemplate(tripEvents.shift(), DESTINATION_ITEMS, eventToOffers));
 render(tripEventsElement, createTripDaysTemplate());
 const tripDaysElement = tripEventsElement.querySelector(`.trip-days`);
 

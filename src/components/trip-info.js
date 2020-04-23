@@ -1,6 +1,6 @@
 import {formatDateToTripInfo} from "../utils/date/formatters.js";
 
-const getDiffItem = (major, minor) => major.filter((i) => minor.indexOf(i) < 0);
+const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
 
 const getTripTitle = (tripEvents) => {
   const startPointName = tripEvents[0].destination.name;
@@ -9,11 +9,16 @@ const getTripTitle = (tripEvents) => {
 
   if (allPoints.length === 1) {
     return startPointName;
-  } else if (allPoints.length === 2) {
+  }
+  if (allPoints.length === 2 && startPointName !== endPointName) {
     return `${startPointName} &mdash; ${endPointName}`;
-  } else if (allPoints.length === 3 && startPointName !== endPointName) {
-    const middle = getDiffItem(allPoints, [startPointName, endPointName])[0];
-    return `${startPointName} &mdash; ${middle} &mdash; ${endPointName}`;
+  }
+  if (allPoints.length === 2 && startPointName === endPointName) {
+    return `${startPointName} &mdash; ${allPoints[1]} &mdash; ${endPointName}`;
+  }
+  if (allPoints.length === 3 && startPointName !== endPointName) {
+    const middlePointName = getDiffItem(allPoints, [startPointName, endPointName])[0];
+    return `${startPointName} &mdash; ${middlePointName} &mdash; ${endPointName}`;
   }
 
   return `${startPointName} &mdash; ... &mdash; ${endPointName}`;
@@ -29,7 +34,8 @@ const getTripDates = (tripEvents) => {
 
   if (startPointDate === endPointDate) {
     return `${startPointDate}`;
-  } else if (startPointMonth === endPointMonth) {
+  }
+  if (startPointMonth === endPointMonth) {
     return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDay}`;
   }
 

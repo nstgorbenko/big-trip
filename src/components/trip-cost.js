@@ -1,12 +1,11 @@
-const getTotalCost = (tripEvents) => {
-  return tripEvents.reduce((cost, tripEvent) => {
-    cost += tripEvent.basePrice;
-    if (tripEvent.checkedOffers !== null) {
-      cost += tripEvent.checkedOffers.reduce((offersCost, offer) => offersCost + offer.price, 0);
-    }
-    return cost;
+const getOffersCost = (offers, basePrice) => offers.reduce((offersCost, {price}) => offersCost + price, basePrice);
+
+const getTotalCost = (tripEvents) =>
+  tripEvents.reduce((cost, {basePrice, offers}) => {
+    return cost + (offers.length > 0
+      ? getOffersCost(offers, basePrice)
+      : basePrice);
   }, 0);
-};
 
 export const createTripCostTemplate = (tripEvents) => {
   const totalCost = getTotalCost(tripEvents);

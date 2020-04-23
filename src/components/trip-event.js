@@ -3,7 +3,9 @@ import {formatDateToEventDatetime, formatTime} from "../utils/date/formatters.js
 import {getDuration} from "../utils/date/duration.js";
 
 const createOffersMarkup = (offers) => {
-  return offers.map((offer) => {
+  const OFFERS_TO_SHOW = 3;
+
+  return offers.slice(0, OFFERS_TO_SHOW).map((offer) => {
     const {title, price} = offer;
 
     return (
@@ -17,9 +19,9 @@ const createOffersMarkup = (offers) => {
 };
 
 export const createTripEventTemplate = (tripEvent) => {
-  const {type, destination, start, end, basePrice, checkedOffers} = tripEvent;
+  const {type, destination, start, end, basePrice, offers} = tripEvent;
 
-  const isOffersType = checkedOffers.length > 0;
+  const isOffersType = offers.length > 0;
 
   const startDatetime = formatDateToEventDatetime(start);
   const startTime = formatTime(start);
@@ -53,7 +55,7 @@ export const createTripEventTemplate = (tripEvent) => {
     ${isOffersType ?
       `<h4 class="visually-hidden">Offers:</h4>
       <ul class="event__selected-offers">
-        ${createOffersMarkup(checkedOffers)}
+        ${createOffersMarkup(offers)}
       </ul>` : ``}
 
         <button class="event__rollup-btn" type="button">

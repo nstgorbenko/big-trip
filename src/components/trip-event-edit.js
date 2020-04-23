@@ -35,15 +35,23 @@ const createDestinationsMarkup = (destinations) => {
   }).join(`\n`);
 };
 
-const createOffersMarkup = (offers, checkedOffers) => {
-  return offers.map((offer) => {
-    const {id, title, price} = offer;
-    const isChecked = checkedOffers.filter((checkedOffer) => checkedOffer.id === id).length > 0;
+const getOffers = (allOffers, checkedOffers) =>
+  allOffers.reduce((offers, currentOffer) => {
+    if (checkedOffers.some(({title}) => title === currentOffer.title)) {
+      currentOffer.isChecked = true;
+    }
+    offers.push(currentOffer);
+    return offers;
+  }, []);
+
+const createOffersMarkup = (offers) => {
+  return offers.map((offer, index) => {
+    const {id, title, price, isChecked} = offer;
 
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-1" type="checkbox" name="event-offer-${id}" ${isChecked ? `checked` : ``}>
-        <label class="event__offer-label" for="event-offer-${id}-1">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-${index}" type="checkbox" name="event-offer-${id}" ${isChecked ? `checked` : ``}>
+        <label class="event__offer-label" for="event-offer-${id}-${index}">
           <span class="event__offer-title">${title}</span>
           +
           €&nbsp;<span class="event__offer-price">${price}</span>
@@ -61,8 +69,8 @@ const createPhotosMarkup = (photos) => {
   }).join(`\n`);
 };
 
-export const createTripEventEditTemplate = (tripEvent) => {
-  const {type, destination, destinations, start, end, basePrice, checkedOffers, offers, isFavourite} = tripEvent;
+export const createTripEventEditTemplate = (tripEvent, destinations, allOffers) => {
+  const {type, destination, start, end, basePrice, offers, isFavourite} = tripEvent;
 
   const eventGroupsMarkup = createEventGroupsMarkup(eventGroups);
   const destinationsMarkup = createDestinationsMarkup(destinations);
@@ -77,7 +85,8 @@ export const createTripEventEditTemplate = (tripEvent) => {
   const description = destination.description;
   const photos = destination.photos;
 
-  const isOffersType = checkedOffers.length > 0;
+  const allTripEventOffers = allOffers[type];
+  const isOffersType = offers.length > 0;
   const isInfo = !!description;
 
   const favourite = isFavourite ? `checked` : ``;
@@ -149,7 +158,7 @@ export const createTripEventEditTemplate = (tripEvent) => {
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
         <div class="event__available-offers">
-          ${createOffersMarkup(offers, checkedOffers)}
+          ${createOffersMarkup(getOffers(allTripEventOffers, offers))}
         </div>
       </section>` : ``}
 

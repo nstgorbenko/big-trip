@@ -12,10 +12,7 @@ const eventToOffers = {
   'Sightseeing': [{id: `tickets`, title: `Book tickets`, price: 40}, {id: `lunch`, title: `Lunch in city`, price: 30}],
 };
 
-const offersCount = (offers) => {
-  const min = Math.min(3, offers.length);
-  return getRandomIntegerNumber(1, min + 1);
-};
+const offersCount = (offers) => getRandomIntegerNumber(1, offers.length + 1);
 
 const getCheckedOffers = (type) => eventToOffers.hasOwnProperty(type) && eventToOffers[type].length > 0
   ? eventToOffers[type].slice(0, offersCount(eventToOffers[type]))
