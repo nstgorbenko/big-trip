@@ -1,11 +1,17 @@
+import {createElement} from "../utils/dom.js";
 import {eventTypesWithPrepositions} from "../const.js";
 import {formatDateToEventDatetime, formatTime} from "../utils/date/formatters.js";
 import {getDuration} from "../utils/date/duration.js";
 
-const createOffersMarkup = (offers) => {
-  const OFFERS_TO_SHOW = 3;
+const OFFERS_TO_SHOW = 3;
 
-  return offers.slice(0, OFFERS_TO_SHOW).map((offer) => {
+const truncateOffers = (offers) =>
+  offers.length > OFFERS_TO_SHOW
+    ? offers.slice(0, OFFERS_TO_SHOW)
+    : offers;
+
+const createOffersMarkup = (offers) => {
+  return truncateOffers(offers).map((offer) => {
     const {title, price} = offer;
 
     return (
@@ -18,7 +24,7 @@ const createOffersMarkup = (offers) => {
   }).join(`\n`);
 };
 
-export const createTripEventTemplate = (tripEvent) => {
+const createTripEventTemplate = (tripEvent) => {
   const {type, destination, start, end, basePrice, offers} = tripEvent;
 
   const isOffersType = offers.length > 0;
@@ -65,3 +71,25 @@ export const createTripEventTemplate = (tripEvent) => {
     </li>`
   );
 };
+
+export default class TripEvent {
+  constructor(tripEvent) {
+    this._tripEvent = tripEvent;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventTemplate(this._tripEvent);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

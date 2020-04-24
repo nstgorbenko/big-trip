@@ -15,3 +15,10 @@ export const eventTypesWithPrepositions = {
   'Sightseeing': `Sightseeing in`,
   'Restaurant': `Restaurant in`,
 };
+
+export const RenderPosition = {
+  BEFOREBEGIN: `beforebegin`,
+  AFTERBEGIN: `afterbegin`,
+  BEFOREEND: `beforeend`,
+  AFTEREND: `afterend`,
+};

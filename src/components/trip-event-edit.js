@@ -1,3 +1,4 @@
+import {createElement} from "../utils/dom.js";
 import {eventGroups, eventTypesWithPrepositions} from "../const.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
 
@@ -39,6 +40,8 @@ const getOffers = (allOffers, checkedOffers) =>
   allOffers.reduce((offers, currentOffer) => {
     if (checkedOffers.some(({title}) => title === currentOffer.title)) {
       currentOffer.isChecked = true;
+    } else {
+      currentOffer.isChecked = false;
     }
     offers.push(currentOffer);
     return offers;
@@ -69,7 +72,7 @@ const createPhotosMarkup = (photos) => {
   }).join(`\n`);
 };
 
-export const createTripEventEditTemplate = (tripEvent, destinations, allOffers) => {
+const createTripEventEditTemplate = (tripEvent, destinations, allOffers) => {
   const {type, destination, start, end, basePrice, offers, isFavourite} = tripEvent;
 
   const eventGroupsMarkup = createEventGroupsMarkup(eventGroups);
@@ -178,3 +181,27 @@ export const createTripEventEditTemplate = (tripEvent, destinations, allOffers) 
     </form>`
   );
 };
+
+export default class TripEventEdit {
+  constructor(tripEvent, destinations, allOffers) {
+    this._tripEvent = tripEvent;
+    this._destinations = destinations;
+    this._allOffers = allOffers;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripEventEditTemplate(this._tripEvent, this._destinations, this._allOffers);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
