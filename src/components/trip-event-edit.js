@@ -2,27 +2,28 @@ import {createElement} from "../utils/dom.js";
 import {eventGroups, eventTypesWithPrepositions} from "../const.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
 
-const createEventsTypeMarkup = (eventTypes) => {
+const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
     const lowercaseEventType = eventType.toLowerCase();
+    const isChecked = eventType === currentType;
 
     return (
       `<div class="event__type-item">
-        <input id="event-type-${lowercaseEventType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${lowercaseEventType}">
+        <input id="event-type-${lowercaseEventType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${lowercaseEventType}" ${isChecked ? `checked` : ``}>
         <label class="event__type-label  event__type-label--${lowercaseEventType}" for="event-type-${lowercaseEventType}-1">${eventType}</label>
       </div>`
     );
   }).join(`\n`);
 };
 
-const createEventGroupsMarkup = (groups) => {
+const createEventGroupsMarkup = (groups, currentType) => {
   const groupNames = Object.keys(groups);
 
   return groupNames.map((groupName) => {
     return (
       `<fieldset class="event__type-group">
         <legend class="visually-hidden">${groupName}</legend>
-        ${createEventsTypeMarkup(groups[groupName])}
+        ${createEventsTypeMarkup(groups[groupName], currentType)}
       </fieldset>`
     );
   }).join(`\n`);
@@ -38,12 +39,12 @@ const createDestinationsMarkup = (destinations) => {
 
 const getOffers = (allOffers, checkedOffers) =>
   allOffers.reduce((offers, currentOffer) => {
-    if (checkedOffers.some(({title}) => title === currentOffer.title)) {
-      currentOffer.isChecked = true;
-    } else {
-      currentOffer.isChecked = false;
-    }
+    const isCheckedOffer = checkedOffers.some(({title}) =>
+      title === currentOffer.title);
+
+    currentOffer.isChecked = isCheckedOffer;
     offers.push(currentOffer);
+
     return offers;
   }, []);
 
@@ -75,7 +76,7 @@ const createPhotosMarkup = (photos) => {
 const createTripEventEditTemplate = (tripEvent, destinations, allOffers) => {
   const {type, destination, start, end, basePrice, offers, isFavourite} = tripEvent;
 
-  const eventGroupsMarkup = createEventGroupsMarkup(eventGroups);
+  const eventGroupsMarkup = createEventGroupsMarkup(eventGroups, type);
   const destinationsMarkup = createDestinationsMarkup(destinations);
 
   const isType = !!type;

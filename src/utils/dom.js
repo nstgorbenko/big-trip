@@ -21,6 +21,8 @@ const render = (container, element, place = RenderPosition.BEFOREEND) => {
     case RenderPosition.AFTEREND:
       container.after(element);
       break;
+    default:
+      throw new Error(`Unknown render position: ${place}`);
   }
 };
 

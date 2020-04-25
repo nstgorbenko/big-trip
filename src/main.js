@@ -56,34 +56,34 @@ const renderAllDays = (tripDaysContainer, allDays) => {
     const dayIndex = i + 1;
 
     render(tripDaysContainer, new DayComponent(day, dayIndex).getElement());
-    const tripEventsListElement = tripDaysContainer.querySelector(`.day:last-child`).querySelector(`.trip-events__list`);
+    const tripEventsList = tripDaysContainer.querySelector(`.day:last-child`).querySelector(`.trip-events__list`);
 
     for (const tripEvent of allDays[day]) {
-      renderTripEvent(tripEventsListElement, tripEvent);
+      renderTripEvent(tripEventsList, tripEvent);
     }
   }
 };
 
 const renderTripInfoBoard = () => {
-  const tripMainElement = document.querySelector(`.trip-main`);
-  render(tripMainElement, new TripInfoComponent(tripEvents).getElement(), RenderPosition.AFTERBEGIN);
-  const tripInfoElement = tripMainElement.querySelector(`.trip-info`);
-  render(tripInfoElement, new TripCostComponent(tripEvents).getElement());
+  const tripMain = document.querySelector(`.trip-main`);
+  render(tripMain, new TripInfoComponent(tripEvents).getElement(), RenderPosition.AFTERBEGIN);
+  const tripInfo = tripMain.querySelector(`.trip-info`);
+  render(tripInfo, new TripCostComponent(tripEvents).getElement());
 
-  const tripControlsElement = tripMainElement.querySelector(`.trip-controls`);
-  const tripViewHeadingElement = tripControlsElement.querySelector(`h2`);
-  render(tripViewHeadingElement, new MenuComponent().getElement(), RenderPosition.AFTEREND);
-  render(tripControlsElement, new FilterComponent().getElement());
+  const tripControls = tripMain.querySelector(`.trip-controls`);
+  const tripViewHeading = tripControls.querySelector(`h2`);
+  render(tripViewHeading, new MenuComponent().getElement(), RenderPosition.AFTEREND);
+  render(tripControls, new FilterComponent().getElement());
 };
 
 const renderTripEventsBoard = () => {
-  const tripEventsElement = document.querySelector(`.trip-events`);
-  render(tripEventsElement, new SortComponent().getElement());
-  render(tripEventsElement, new TripDaysComponent().getElement());
-  const tripDaysElement = tripEventsElement.querySelector(`.trip-days`);
+  const tripBoard = document.querySelector(`.trip-events`);
+  render(tripBoard, new SortComponent().getElement());
+  render(tripBoard, new TripDaysComponent().getElement());
+  const tripDays = tripBoard.querySelector(`.trip-days`);
 
   const eventsDays = groupEventsByDays(tripEvents, `start`);
-  renderAllDays(tripDaysElement, eventsDays);
+  renderAllDays(tripDays, eventsDays);
 };
 
 renderTripInfoBoard();
