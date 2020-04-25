@@ -1,3 +1,4 @@
+import {createElement} from "../utils/dom.js";
 import {formatDateToTripInfo} from "../utils/date/formatters.js";
 
 const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
@@ -33,7 +34,7 @@ const getTripDates = (tripEvents) => {
   const endPointDay = endPointDate.slice(-2);
 
   if (startPointDate === endPointDate) {
-    return `${startPointDate}`;
+    return startPointDate;
   }
   if (startPointMonth === endPointMonth) {
     return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDay}`;
@@ -42,7 +43,7 @@ const getTripDates = (tripEvents) => {
   return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDate}`;
 };
 
-export const createTripInfoTemplate = (tripEvents) => {
+const createTripInfoTemplate = (tripEvents) => {
   const tripTitle = getTripTitle(tripEvents);
   const tripDates = getTripDates(tripEvents);
 
@@ -56,3 +57,25 @@ export const createTripInfoTemplate = (tripEvents) => {
     </section>`
   );
 };
+
+export default class TripInfo {
+  constructor(tripEvents) {
+    this._tripEvents = tripEvents;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripInfoTemplate(this._tripEvents);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

@@ -1,3 +1,5 @@
+import {createElement} from "../utils/dom.js";
+
 const getOffersCost = (offers, basePrice) => offers.reduce((offersCost, {price}) => offersCost + price, basePrice);
 
 const getTotalCost = (tripEvents) =>
@@ -7,7 +9,7 @@ const getTotalCost = (tripEvents) =>
       : basePrice);
   }, 0);
 
-export const createTripCostTemplate = (tripEvents) => {
+const createTripCostTemplate = (tripEvents) => {
   const totalCost = getTotalCost(tripEvents);
 
   return (
@@ -16,3 +18,25 @@ export const createTripCostTemplate = (tripEvents) => {
     </p>`
   );
 };
+
+export default class TripCost {
+  constructor(tripEvents) {
+    this._tripEvents = tripEvents;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createTripCostTemplate(this._tripEvents);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

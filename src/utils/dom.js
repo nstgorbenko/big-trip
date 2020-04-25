@@ -1,3 +1,29 @@
-export const render = (container, template, place = `beforeend`) => {
-  container.insertAdjacentHTML(place, template);
+import {RenderPosition} from "../const.js";
+
+const createElement = (template) => {
+  const newElement = document.createElement(`div`);
+  newElement.innerHTML = template;
+
+  return newElement.firstChild;
 };
+
+const render = (container, element, place = RenderPosition.BEFOREEND) => {
+  switch (place) {
+    case RenderPosition.BEFOREBEGIN:
+      container.before(element);
+      break;
+    case RenderPosition.AFTERBEGIN:
+      container.prepend(element);
+      break;
+    case RenderPosition.BEFOREEND:
+      container.append(element);
+      break;
+    case RenderPosition.AFTEREND:
+      container.after(element);
+      break;
+    default:
+      throw new Error(`Unknown render position: ${place}`);
+  }
+};
+
+export {createElement, render};
