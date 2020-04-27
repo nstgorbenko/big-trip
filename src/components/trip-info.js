@@ -44,16 +44,16 @@ const getTripDates = (tripEvents) => {
 };
 
 const createTripInfoTemplate = (tripEvents) => {
-  const tripTitle = getTripTitle(tripEvents);
-  const tripDates = getTripDates(tripEvents);
+  const noEvents = tripEvents.length === 0;
 
   return (
     `<section class="trip-main__trip-info  trip-info">
-      <div class="trip-info__main">
-        <h1 class="trip-info__title">${tripTitle}</h1>
+      ${noEvents ? `` :
+      `<div class="trip-info__main">
+        <h1 class="trip-info__title">${getTripTitle(tripEvents)}</h1>
 
-        <p class="trip-info__dates">${tripDates}</p>
-      </div>
+        <p class="trip-info__dates">${getTripDates(tripEvents)}</p>
+    </div>`}
     </section>`
   );
 };

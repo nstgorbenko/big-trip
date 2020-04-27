@@ -1,6 +1,8 @@
 import DayComponent from "./components/day.js";
+import {isEscEvent} from "./utils/common.js";
 import FilterComponent from "./components/filter.js";
 import MenuComponent from "./components/menu.js";
+import NoEventsComponent from "./components/no-events.js";
 import SortComponent from "./components/sort.js";
 import TripCostComponent from "./components/trip-cost.js";
 import TripDaysComponent from "./components/trip-days.js";
@@ -31,20 +33,36 @@ const groupEventsByDays = (someEvents, date) => {
 };
 
 const renderTripEvent = (tripEventsContainer, tripEvent) => {
-  const tripEventComponent = new TripEventComponent(tripEvent);
-  const eventRollupButton = tripEventComponent.getElement().querySelector(`.event__rollup-btn`);
-  const onEventRollupButtonClick = () => {
+  const replaceEventToEdit = () => {
     tripEventsContainer.replaceChild(tripEventEditComponent.getElement(), tripEventComponent.getElement());
   };
 
-  const tripEventEditComponent = new TripEventEditComponent(tripEvent, DESTINATION_ITEMS, eventToOffers);
-  const eventEditForm = tripEventEditComponent.getElement();
-  const onEventEditFormSubmit = () => {
+  const replaceEditToEvent = () => {
     tripEventsContainer.replaceChild(tripEventComponent.getElement(), tripEventEditComponent.getElement());
   };
 
-  eventRollupButton.addEventListener(`click`, onEventRollupButtonClick);
-  eventEditForm.addEventListener(`submit`, onEventEditFormSubmit);
+  const onEscKeyDown = (evt) => {
+    if (isEscEvent(evt)) {
+      replaceEditToEvent();
+      document.removeEventListener(`keydown`, onEscKeyDown);
+    }
+  };
+
+  const tripEventComponent = new TripEventComponent(tripEvent);
+  const eventRollupButton = tripEventComponent.getElement().querySelector(`.event__rollup-btn`);
+  const tripEventEditComponent = new TripEventEditComponent(tripEvent, DESTINATION_ITEMS, eventToOffers);
+  const eventEditForm = tripEventEditComponent.getElement();
+
+  eventRollupButton.addEventListener(`click`, () => {
+    replaceEventToEdit();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
+
+  eventEditForm.addEventListener(`submit`, () => {
+    replaceEditToEvent();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  });
+
   render(tripEventsContainer, tripEventComponent.getElement());
 };
 
@@ -78,6 +96,11 @@ const renderTripInfoBoard = () => {
 
 const renderTripEventsBoard = () => {
   const tripBoard = document.querySelector(`.trip-events`);
+  if (tripEvents.length === 0) {
+    render(tripBoard, new NoEventsComponent().getElement());
+    return;
+  }
+
   render(tripBoard, new SortComponent().getElement());
   render(tripBoard, new TripDaysComponent().getElement());
   const tripDays = tripBoard.querySelector(`.trip-days`);
