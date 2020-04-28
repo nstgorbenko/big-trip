@@ -1,4 +1,4 @@
-import {createElement} from "../utils/dom.js";
+import AbstractComponent from "./abstract-component.js";
 import {eventTypesWithPrepositions} from "../const.js";
 import {formatDateToEventDatetime, formatTime} from "../utils/date/formatters.js";
 import {getDuration} from "../utils/date/duration.js";
@@ -72,24 +72,19 @@ const createTripEventTemplate = (tripEvent) => {
   );
 };
 
-export default class TripEvent {
+export default class TripEvent extends AbstractComponent {
   constructor(tripEvent) {
+    super();
+
     this._tripEvent = tripEvent;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripEventTemplate(this._tripEvent);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setRollupButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`)
+      .addEventListener(`click`, handler);
   }
 }

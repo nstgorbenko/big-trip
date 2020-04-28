@@ -1,4 +1,4 @@
-import {createElement} from "../utils/dom.js";
+import AbstractComponent from "./abstract-component.js";
 import {formatDateToTripInfo} from "../utils/date/formatters.js";
 
 const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
@@ -58,24 +58,14 @@ const createTripInfoTemplate = (tripEvents) => {
   );
 };
 
-export default class TripInfo {
+export default class TripInfo extends AbstractComponent {
   constructor(tripEvents) {
+    super();
+
     this._tripEvents = tripEvents;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripInfoTemplate(this._tripEvents);
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }

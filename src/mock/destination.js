@@ -30,12 +30,24 @@ const getRandomPhoto = () => ({
   description: `Event photo`,
 });
 
+const getDescription = () => Math.random() > 0.5 ? `` : DESTINATION_DESCRIPTIONS.slice(0, getRandomIntegerNumber(1, 6)).join(` `);
+
+const getPhotos = () => getRandomArrayLength(0, 6).map(getRandomPhoto);
+
 const getDestination = () => {
   return {
     name: getRandomArrayItem(DESTINATION_ITEMS),
-    description: Math.random() > 0.5 ? `` : DESTINATION_DESCRIPTIONS.slice(0, getRandomIntegerNumber(1, 6)).join(` `),
-    photos: getRandomArrayLength(0, 6).map(getRandomPhoto),
+    description: getDescription(),
+    photos: getPhotos(),
   };
 };
 
-export {DESTINATION_ITEMS, getDestination};
+const destinations = DESTINATION_ITEMS.map((destination) => {
+  return {
+    name: destination,
+    description: getDescription(),
+    photos: getPhotos(),
+  };
+});
+
+export {DESTINATION_ITEMS, destinations, getDestination};
