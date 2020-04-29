@@ -22,3 +22,8 @@ export const RenderPosition = {
   BEFOREEND: `beforeend`,
   AFTEREND: `afterend`,
 };
+
+export const Message = {
+  NO_EVENTS: `Click New Event to create your first point`,
+  LOADING: `Loading...`
+};

@@ -9,6 +9,9 @@ import {RenderPosition} from "./const.js";
 
 const EVENT_COUNT = 20;
 
+const tripBoard = document.querySelector(`.trip-events`);
+const tripController = new TripController(tripBoard);
+
 const renderTripInfoBoard = () => {
   const tripMain = document.querySelector(`.trip-main`);
   render(tripMain, new TripInfoComponent(tripEvents), RenderPosition.AFTERBEGIN);
@@ -21,8 +24,6 @@ const renderTripInfoBoard = () => {
   render(tripControls, new FilterComponent());
 };
 
-const tripController = new TripController();
 const tripEvents = generateEvents(EVENT_COUNT).sort((a, b) => a.start - b.start);
-
 renderTripInfoBoard();
 tripController.render(tripEvents);

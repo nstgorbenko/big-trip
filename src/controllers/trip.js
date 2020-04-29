@@ -1,13 +1,15 @@
 import DayComponent from "../components/day.js";
-import {isEscKey} from "../utils/common.js";
-import NoEventsComponent from "../components/no-events.js";
+import EventsListComponent from "../components/events-list.js";
 import SortComponent from "../components/sort.js";
 import TripDaysComponent from "../components/trip-days.js";
 import TripEventEditComponent from "../components/trip-event-edit.js";
 import TripEventComponent from "../components/trip-event.js";
+import TripMessageComponent from "../components/trip-message.js";
 import {destinations} from "../mock/destination.js";
 import {eventToOffers} from "../mock/offers.js";
 import {formatDateToDayDatetime} from "../utils/date/formatters.js";
+import {isEscKey} from "../utils/common.js";
+import {Message} from "../const.js";
 import {render, replace} from "../utils/dom.js";
 
 const groupEventsByDays = (someEvents, date) => {
@@ -56,12 +58,13 @@ const renderAllDays = (tripDaysContainer, allDays) => {
     const day = days[i];
     const dayIndex = i + 1;
     const dayComponent = new DayComponent(day, dayIndex);
-    const tripEventsList = dayComponent.getElement().querySelector(`.trip-events__list`);
+    const tripEventsList = new EventsListComponent();
 
     render(tripDaysContainer, dayComponent);
+    render(dayComponent.getElement(), tripEventsList);
 
     for (const tripEvent of allDays[day]) {
-      renderTripEvent(tripEventsList, tripEvent);
+      renderTripEvent(tripEventsList.getElement(), tripEvent);
     }
   }
 };
@@ -69,20 +72,18 @@ const renderAllDays = (tripDaysContainer, allDays) => {
 export default class TripController {
   constructor(container) {
     this._container = container;
-    this._noEventsComponent = new NoEventsComponent();
     this._sortComponent = new SortComponent();
     this._tripDaysComponent = new TripDaysComponent();
   }
 
   render(tripEvents) {
-    const tripBoard = document.querySelector(`.trip-events`);
     if (tripEvents.length === 0) {
-      render(tripBoard, this._noEventsComponent);
+      render(this._container, new TripMessageComponent(Message.NO_EVENTS));
       return;
     }
 
-    render(tripBoard, this._sortComponent);
-    render(tripBoard, this._tripDaysComponent);
+    render(this._container, this._sortComponent);
+    render(this._container, this._tripDaysComponent);
 
     const tripDays = this._tripDaysComponent.getElement();
     const eventsDays = groupEventsByDays(tripEvents, `start`);

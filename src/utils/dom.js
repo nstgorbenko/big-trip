@@ -1,13 +1,13 @@
 import {RenderPosition} from "../const.js";
 
-const createElement = (template) => {
+export const createElement = (template) => {
   const newElement = document.createElement(`div`);
   newElement.innerHTML = template;
 
   return newElement.firstChild;
 };
 
-const render = (container, component, place = RenderPosition.BEFOREEND) => {
+export const render = (container, component, place = RenderPosition.BEFOREEND) => {
   switch (place) {
     case RenderPosition.BEFOREBEGIN:
       container.before(component.getElement());
@@ -26,15 +26,7 @@ const render = (container, component, place = RenderPosition.BEFOREEND) => {
   }
 };
 
-const replace = (newComponent, oldComponent) => {
-  const newElement = newComponent.getElement();
-  const oldElement = oldComponent.getElement();
-  const parentElement = oldElement.parentElement;
-  const isElementsExist = !!(newElement && oldElement && parentElement);
-
-  if (isElementsExist) {
-    parentElement.replaceChild(newElement, oldElement);
-  }
+export const replace = (newComponent, oldComponent) => {
+  oldComponent.getElement().replaceWith(newComponent.getElement());
 };
 
-export {createElement, render, replace};
