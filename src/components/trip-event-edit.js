@@ -1,4 +1,4 @@
-import {createElement} from "../utils/dom.js";
+import AbstractComponent from "./abstract-component.js";
 import {eventGroups, eventTypesWithPrepositions} from "../const.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
 
@@ -30,9 +30,9 @@ const createEventGroupsMarkup = (groups, currentType) => {
 };
 
 const createDestinationsMarkup = (destinations) => {
-  return destinations.map((destination) => {
+  return destinations.map(({name}) => {
     return (
-      `<option value="${destination}"></option>`
+      `<option value="${name}"></option>`
     );
   }).join(`\n`);
 };
@@ -183,26 +183,20 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers) => {
   );
 };
 
-export default class TripEventEdit {
+export default class TripEventEdit extends AbstractComponent {
   constructor(tripEvent, destinations, allOffers) {
+    super();
+
     this._tripEvent = tripEvent;
     this._destinations = destinations;
     this._allOffers = allOffers;
-    this._element = null;
   }
 
   getTemplate() {
     return createTripEventEditTemplate(this._tripEvent, this._destinations, this._allOffers);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
+  setSubmitHandler(handler) {
+    this.getElement().addEventListener(`submit`, handler);
   }
 }

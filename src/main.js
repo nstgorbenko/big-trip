@@ -1,113 +1,29 @@
-import DayComponent from "./components/day.js";
-import {isEscEvent} from "./utils/common.js";
 import FilterComponent from "./components/filter.js";
 import MenuComponent from "./components/menu.js";
-import NoEventsComponent from "./components/no-events.js";
-import SortComponent from "./components/sort.js";
+import TripController from "./controllers/trip.js";
 import TripCostComponent from "./components/trip-cost.js";
-import TripDaysComponent from "./components/trip-days.js";
-import TripEventEditComponent from "./components/trip-event-edit.js";
-import TripEventComponent from "./components/trip-event.js";
 import TripInfoComponent from "./components/trip-info.js";
-import {DESTINATION_ITEMS} from "./mock/destination.js";
-import {eventToOffers} from "./mock/offers.js";
-import {formatDateToDayDatetime} from "./utils/date/formatters.js";
 import {generateEvents} from "./mock/event.js";
 import {render} from "./utils/dom.js";
 import {RenderPosition} from "./const.js";
 
 const EVENT_COUNT = 20;
-const tripEvents = generateEvents(EVENT_COUNT).sort((a, b) => a.start - b.start);
 
-const groupEventsByDays = (someEvents, date) => {
-  return someEvents.reduce((days, currentDay) => {
-    const someDate = formatDateToDayDatetime(currentDay[date]);
-
-    if (!days.hasOwnProperty(someDate)) {
-      days[someDate] = [];
-    }
-    days[someDate].push(currentDay);
-
-    return days;
-  }, {});
-};
-
-const renderTripEvent = (tripEventsContainer, tripEvent) => {
-  const replaceEventToEdit = () => {
-    tripEventsContainer.replaceChild(tripEventEditComponent.getElement(), tripEventComponent.getElement());
-  };
-
-  const replaceEditToEvent = () => {
-    tripEventsContainer.replaceChild(tripEventComponent.getElement(), tripEventEditComponent.getElement());
-  };
-
-  const onEscKeyDown = (evt) => {
-    if (isEscEvent(evt)) {
-      replaceEditToEvent();
-      document.removeEventListener(`keydown`, onEscKeyDown);
-    }
-  };
-
-  const tripEventComponent = new TripEventComponent(tripEvent);
-  const eventRollupButton = tripEventComponent.getElement().querySelector(`.event__rollup-btn`);
-  const tripEventEditComponent = new TripEventEditComponent(tripEvent, DESTINATION_ITEMS, eventToOffers);
-  const eventEditForm = tripEventEditComponent.getElement();
-
-  eventRollupButton.addEventListener(`click`, () => {
-    replaceEventToEdit();
-    document.addEventListener(`keydown`, onEscKeyDown);
-  });
-
-  eventEditForm.addEventListener(`submit`, () => {
-    replaceEditToEvent();
-    document.removeEventListener(`keydown`, onEscKeyDown);
-  });
-
-  render(tripEventsContainer, tripEventComponent.getElement());
-};
-
-const renderAllDays = (tripDaysContainer, allDays) => {
-  const days = Object.keys(allDays).sort();
-
-  for (let i = 0; i < days.length; i++) {
-    const day = days[i];
-    const dayIndex = i + 1;
-
-    render(tripDaysContainer, new DayComponent(day, dayIndex).getElement());
-    const tripEventsList = tripDaysContainer.querySelector(`.day:last-child`).querySelector(`.trip-events__list`);
-
-    for (const tripEvent of allDays[day]) {
-      renderTripEvent(tripEventsList, tripEvent);
-    }
-  }
-};
+const tripBoard = document.querySelector(`.trip-events`);
+const tripController = new TripController(tripBoard);
 
 const renderTripInfoBoard = () => {
   const tripMain = document.querySelector(`.trip-main`);
-  render(tripMain, new TripInfoComponent(tripEvents).getElement(), RenderPosition.AFTERBEGIN);
+  render(tripMain, new TripInfoComponent(tripEvents), RenderPosition.AFTERBEGIN);
   const tripInfo = tripMain.querySelector(`.trip-info`);
-  render(tripInfo, new TripCostComponent(tripEvents).getElement());
+  render(tripInfo, new TripCostComponent(tripEvents));
 
   const tripControls = tripMain.querySelector(`.trip-controls`);
   const tripViewHeading = tripControls.querySelector(`h2`);
-  render(tripViewHeading, new MenuComponent().getElement(), RenderPosition.AFTEREND);
-  render(tripControls, new FilterComponent().getElement());
+  render(tripViewHeading, new MenuComponent(), RenderPosition.AFTEREND);
+  render(tripControls, new FilterComponent());
 };
 
-const renderTripEventsBoard = () => {
-  const tripBoard = document.querySelector(`.trip-events`);
-  if (tripEvents.length === 0) {
-    render(tripBoard, new NoEventsComponent().getElement());
-    return;
-  }
-
-  render(tripBoard, new SortComponent().getElement());
-  render(tripBoard, new TripDaysComponent().getElement());
-  const tripDays = tripBoard.querySelector(`.trip-days`);
-
-  const eventsDays = groupEventsByDays(tripEvents, `start`);
-  renderAllDays(tripDays, eventsDays);
-};
-
+const tripEvents = generateEvents(EVENT_COUNT).sort((a, b) => a.start - b.start);
 renderTripInfoBoard();
-renderTripEventsBoard();
+tripController.render(tripEvents);
