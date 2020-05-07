@@ -1,28 +1,29 @@
 import AbstractComponent from "./abstract-component.js";
 import {formatDay} from "../utils/date/formatters.js";
 
-const createDayTemplate = (day, number) => {
-  const formattedDay = formatDay(day);
+const createDayTemplate = (day, counter = 0) => {
+  const isCertainDay = counter > 0;
 
   return (
     `<li class="trip-days__item  day">
       <div class="day__info">
-        <span class="day__counter">${number}</span>
-        <time class="day__date" datetime=${day}>${formattedDay}</time>
+    ${isCertainDay ?
+      `<span class="day__counter">${counter}</span>
+      <time class="day__date" datetime=${day}>${formatDay(day)}</time>` : ``}
       </div>
     </li>`
   );
 };
 
 export default class Day extends AbstractComponent {
-  constructor(day, number) {
+  constructor(day, counter) {
     super();
 
     this._day = day;
-    this._number = number;
+    this._counter = counter;
   }
 
   getTemplate() {
-    return createDayTemplate(this._day, this._number);
+    return createDayTemplate(this._day, this._counter);
   }
 }

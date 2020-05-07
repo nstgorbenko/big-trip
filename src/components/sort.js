@@ -1,4 +1,5 @@
 import AbstractComponent from "./abstract-component.js";
+import {SortType} from "../utils/sort.js";
 
 const createSortTemplate = () => {
   return (
@@ -36,7 +37,38 @@ const createSortTemplate = () => {
 };
 
 export default class Sort extends AbstractComponent {
+  constructor() {
+    super();
+
+    this._currenSortType = SortType.DEFAULT;
+  }
+
   getTemplate() {
     return createSortTemplate();
+  }
+
+  getSortType() {
+    return this._currenSortType;
+  }
+
+  setSortTypeChangeHandler(handler) {
+    this.getElement().addEventListener(`change`, (evt) => {
+      const sortType = evt.target.value;
+
+      if (this._currenSortType === sortType) {
+        return;
+      }
+
+      this._currenSortType = sortType;
+      const tripSortDayTitle = this.getElement().querySelector(`.trip-sort__item--day`);
+
+      if (this._currenSortType === SortType.TIME || this._currenSortType === SortType.PRICE) {
+        tripSortDayTitle.innerHTML = ``;
+      } else {
+        tripSortDayTitle.innerHTML = `Day`;
+      }
+
+      handler(this._currenSortType);
+    });
   }
 }

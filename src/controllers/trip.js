@@ -8,13 +8,14 @@ import TripMessageComponent from "../components/trip-message.js";
 import {destinations} from "../mock/destination.js";
 import {eventToOffers} from "../mock/offers.js";
 import {formatDateToDayDatetime} from "../utils/date/formatters.js";
+import {getSortedTripEvents, SortType} from "../utils/sort.js";
 import {isEscKey} from "../utils/common.js";
 import {Message} from "../const.js";
 import {render, replace} from "../utils/dom.js";
 
-const groupEventsByDays = (someEvents, date) => {
+const groupEventsByDays = (someEvents) => {
   return someEvents.reduce((days, currentDay) => {
-    const someDate = formatDateToDayDatetime(currentDay[date]);
+    const someDate = formatDateToDayDatetime(currentDay.start);
 
     if (!days.hasOwnProperty(someDate)) {
       days[someDate] = [];
@@ -51,42 +52,74 @@ const renderTripEvent = (tripEventsContainer, tripEvent) => {
   render(tripEventsContainer, tripEventComponent);
 };
 
-const renderAllDays = (tripDaysContainer, allDays) => {
-  const days = Object.keys(allDays).sort();
+const renderTripEvents = (tripEventsContainer, tripEvents) => {
+  tripEvents.forEach((tripEvent) =>
+    renderTripEvent(tripEventsContainer, tripEvent));
+};
+
+const renderGroupedEvents = (tripEventsContainer, groupedEvents) => {
+  const days = Object.keys(groupedEvents);
 
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
-    const dayIndex = i + 1;
-    const dayComponent = new DayComponent(day, dayIndex);
-    const tripEventsList = new EventsListComponent();
+    const dayCounter = i + 1;
+    const dayComponent = new DayComponent(day, dayCounter);
+    const eventsListComponent = new EventsListComponent();
 
-    render(tripDaysContainer, dayComponent);
-    render(dayComponent.getElement(), tripEventsList);
-
-    for (const tripEvent of allDays[day]) {
-      renderTripEvent(tripEventsList.getElement(), tripEvent);
+    for (const tripEvent of groupedEvents[day]) {
+      renderTripEvent(eventsListComponent.getElement(), tripEvent);
     }
+
+    render(dayComponent.getElement(), eventsListComponent);
+    render(tripEventsContainer, dayComponent);
+  }
+};
+
+const renderAllEvents = (tripEventsContainer, allEvents) => {
+  const eventsByDays = groupEventsByDays(allEvents);
+  renderGroupedEvents(tripEventsContainer, eventsByDays);
+};
+
+const renderSortedTripEvents = (sortType, tripDays, tripEvents) => {
+  const sortedTripEvents = getSortedTripEvents(tripEvents, sortType);
+
+  if (sortType === SortType.DEFAULT) {
+    renderAllEvents(tripDays, sortedTripEvents);
+  } else {
+    const dayComponent = new DayComponent();
+    const eventsListComponent = new EventsListComponent();
+
+    renderTripEvents(eventsListComponent.getElement(), sortedTripEvents);
+    render(dayComponent.getElement(), eventsListComponent);
+    render(tripDays, dayComponent);
   }
 };
 
 export default class TripController {
   constructor(container) {
     this._container = container;
-    this._sortComponent = new SortComponent();
-    this._tripDaysComponent = new TripDaysComponent();
   }
 
   render(tripEvents) {
+    const container = this._container;
+
     if (tripEvents.length === 0) {
-      render(this._container, new TripMessageComponent(Message.NO_EVENTS));
+      render(container, new TripMessageComponent(Message.NO_EVENTS));
       return;
     }
 
-    render(this._container, this._sortComponent);
-    render(this._container, this._tripDaysComponent);
+    const sortComponent = new SortComponent();
+    const tripDaysComponent = new TripDaysComponent();
 
-    const tripDays = this._tripDaysComponent.getElement();
-    const eventsDays = groupEventsByDays(tripEvents, `start`);
-    renderAllDays(tripDays, eventsDays);
+    render(container, sortComponent);
+    render(container, tripDaysComponent);
+
+    const tripDays = tripDaysComponent.getElement();
+    renderAllEvents(tripDays, tripEvents);
+
+    sortComponent.setSortTypeChangeHandler((sortType) => {
+      tripDaysComponent.clear();
+      renderSortedTripEvents(sortType, tripDays, tripEvents);
+    });
   }
 }
