@@ -1,13 +1,12 @@
 import AbstractComponent from "./abstract-component.js";
 
-export const getOffersCost = (offers, basePrice) => offers.reduce((offersCost, {price}) => offersCost + price, basePrice);
+const reduceOffersCost = (cost, {price}) => cost + price;
+const reduceEventsCost = (cost, {basePrice, offers}) =>
+  offers.length > 0
+    ? offers.reduce(reduceOffersCost, cost + basePrice)
+    : cost + basePrice;
 
-const getTotalCost = (tripEvents) =>
-  tripEvents.reduce((cost, {basePrice, offers}) => {
-    return cost + (offers.length > 0
-      ? getOffersCost(offers, basePrice)
-      : basePrice);
-  }, 0);
+const getTotalCost = (tripEvents) => tripEvents.reduce(reduceEventsCost, 0);
 
 const createTripCostTemplate = (tripEvents) => {
   const totalCost = getTotalCost(tripEvents);

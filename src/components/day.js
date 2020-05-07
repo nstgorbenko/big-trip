@@ -1,8 +1,8 @@
 import AbstractComponent from "./abstract-component.js";
 import {formatDay} from "../utils/date/formatters.js";
 
-const createDayTemplate = (day, counter) => {
-  const isCertainDay = (day !== undefined && counter !== undefined);
+const createDayTemplate = (day, counter = 0) => {
+  const isCertainDay = counter > 0;
 
   return (
     `<li class="trip-days__item  day">

@@ -1,6 +1,6 @@
 import DayComponent from "../components/day.js";
 import EventsListComponent from "../components/events-list.js";
-import SortComponent, {SortType} from "../components/sort.js";
+import SortComponent from "../components/sort.js";
 import TripDaysComponent from "../components/trip-days.js";
 import TripEventEditComponent from "../components/trip-event-edit.js";
 import TripEventComponent from "../components/trip-event.js";
@@ -8,14 +8,14 @@ import TripMessageComponent from "../components/trip-message.js";
 import {destinations} from "../mock/destination.js";
 import {eventToOffers} from "../mock/offers.js";
 import {formatDateToDayDatetime} from "../utils/date/formatters.js";
-import {getOffersCost} from "../components/trip-cost.js";
+import {getSortedTripEvents, SortType} from "../utils/sort.js";
 import {isEscKey} from "../utils/common.js";
 import {Message} from "../const.js";
 import {render, replace} from "../utils/dom.js";
 
 const groupEventsByDays = (someEvents) => {
   return someEvents.reduce((days, currentDay) => {
-    const someDate = formatDateToDayDatetime(currentDay[`start`]);
+    const someDate = formatDateToDayDatetime(currentDay.start);
 
     if (!days.hasOwnProperty(someDate)) {
       days[someDate] = [];
@@ -57,8 +57,8 @@ const renderTripEvents = (tripEventsContainer, tripEvents) => {
     renderTripEvent(tripEventsContainer, tripEvent));
 };
 
-const renderAllDays = (tripDaysContainer, allDays) => {
-  const days = Object.keys(allDays).sort();
+const renderGroupedEvents = (tripEventsContainer, groupedEvents) => {
+  const days = Object.keys(groupedEvents);
 
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
@@ -66,57 +66,30 @@ const renderAllDays = (tripDaysContainer, allDays) => {
     const dayComponent = new DayComponent(day, dayCounter);
     const eventsListComponent = new EventsListComponent();
 
-    for (const tripEvent of allDays[day]) {
+    for (const tripEvent of groupedEvents[day]) {
       renderTripEvent(eventsListComponent.getElement(), tripEvent);
     }
 
     render(dayComponent.getElement(), eventsListComponent);
-    render(tripDaysContainer, dayComponent);
+    render(tripEventsContainer, dayComponent);
   }
 };
 
-const sortEventsByTime = (firstEvent, secondEvent) => {
-  const firstEventDuration = firstEvent.end - firstEvent.start;
-  const secondEventDuration = secondEvent.end - secondEvent.start;
-
-  return secondEventDuration - firstEventDuration;
-};
-
-const sortEventsByPrice = (firstEvent, secondEvent) => {
-  const firstEventPrice = firstEvent.offers.length > 0 ? getOffersCost(firstEvent.offers, firstEvent.basePrice) : firstEvent.basePrice;
-  const secondEventPrice = secondEvent.offers.length > 0 ? getOffersCost(secondEvent.offers, secondEvent.basePrice) : secondEvent.basePrice;
-
-  return secondEventPrice - firstEventPrice;
-};
-
-const getSortedTripEvents = (tripEvents, sortType) => {
-  let sortedTripEvents = [];
-  const showingEvents = tripEvents.slice();
-
-  switch (sortType) {
-    case SortType.TIME:
-      sortedTripEvents = showingEvents.sort(sortEventsByTime);
-      break;
-    case SortType.PRICE:
-      sortedTripEvents = showingEvents.sort(sortEventsByPrice);
-      break;
-    case SortType.DEFAULT:
-      sortedTripEvents = showingEvents;
-      break;
-  }
-
-  return sortedTripEvents;
+const renderAllEvents = (tripEventsContainer, allEvents) => {
+  const eventsByDays = groupEventsByDays(allEvents);
+  renderGroupedEvents(tripEventsContainer, eventsByDays);
 };
 
 const renderSortedTripEvents = (sortType, tripDays, tripEvents) => {
+  const sortedTripEvents = getSortedTripEvents(tripEvents, sortType);
+
   if (sortType === SortType.DEFAULT) {
-    const eventsDays = groupEventsByDays(tripEvents);
-    renderAllDays(tripDays, eventsDays);
+    renderAllEvents(tripDays, sortedTripEvents);
   } else {
     const dayComponent = new DayComponent();
     const eventsListComponent = new EventsListComponent();
 
-    renderTripEvents(eventsListComponent.getElement(), getSortedTripEvents(tripEvents, sortType));
+    renderTripEvents(eventsListComponent.getElement(), sortedTripEvents);
     render(dayComponent.getElement(), eventsListComponent);
     render(tripDays, dayComponent);
   }
@@ -125,25 +98,27 @@ const renderSortedTripEvents = (sortType, tripDays, tripEvents) => {
 export default class TripController {
   constructor(container) {
     this._container = container;
-    this._sortComponent = new SortComponent();
-    this._tripDaysComponent = new TripDaysComponent();
   }
 
   render(tripEvents) {
+    const container = this._container;
+
     if (tripEvents.length === 0) {
-      render(this._container, new TripMessageComponent(Message.NO_EVENTS));
+      render(container, new TripMessageComponent(Message.NO_EVENTS));
       return;
     }
 
-    render(this._container, this._sortComponent);
-    render(this._container, this._tripDaysComponent);
+    const sortComponent = new SortComponent();
+    const tripDaysComponent = new TripDaysComponent();
 
-    const tripDays = this._tripDaysComponent.getElement();
-    const eventsDays = groupEventsByDays(tripEvents);
-    renderAllDays(tripDays, eventsDays);
+    render(container, sortComponent);
+    render(container, tripDaysComponent);
 
-    this._sortComponent.setSortTypeChangeHandler((sortType) => {
-      tripDays.innerHTML = ``;
+    const tripDays = tripDaysComponent.getElement();
+    renderAllEvents(tripDays, tripEvents);
+
+    sortComponent.setSortTypeChangeHandler((sortType) => {
+      tripDaysComponent.clear();
       renderSortedTripEvents(sortType, tripDays, tripEvents);
     });
   }
