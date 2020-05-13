@@ -11,21 +11,19 @@ const generateEvent = () => {
   const offers = getCheckedOffers(type);
 
   return {
+    id: String(new Date() + Math.random()),
     type,
     destination: getDestination(),
     start,
     end,
     basePrice: getRandomIntegerNumber(5, 300),
     offers,
-    isFavourite: Math.random() > 0.5,
+    isFavorite: Math.random() > 0.5,
   };
 };
 
-const generateEvents = (count) => {
+export const generateEvents = (count) => {
   return new Array(count)
     .fill(``)
     .map(generateEvent);
 };
-
-
-export {generateEvents};

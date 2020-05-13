@@ -14,7 +14,7 @@ const DESTINATION_DESCRIPTIONS = [
   `In rutrum ac purus sit amet tempus.`
 ];
 
-const DESTINATION_ITEMS = [
+export const DESTINATION_ITEMS = [
   `Amsterdam`,
   `Geneva`,
   `Chamonix`,
@@ -34,7 +34,7 @@ const getDescription = () => Math.random() > 0.5 ? `` : DESTINATION_DESCRIPTIONS
 
 const getPhotos = () => getRandomArrayLength(0, 6).map(getRandomPhoto);
 
-const getDestination = () => {
+export const getDestination = () => {
   return {
     name: getRandomArrayItem(DESTINATION_ITEMS),
     description: getDescription(),
@@ -42,12 +42,10 @@ const getDestination = () => {
   };
 };
 
-const destinations = DESTINATION_ITEMS.map((destination) => {
+export const destinations = DESTINATION_ITEMS.map((destination) => {
   return {
     name: destination,
     description: getDescription(),
     photos: getPhotos(),
   };
 });
-
-export {DESTINATION_ITEMS, destinations, getDestination};
