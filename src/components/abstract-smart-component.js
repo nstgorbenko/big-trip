@@ -5,7 +5,7 @@ export default class AbstractSmartComponent extends AbstractComponent {
     super();
 
     if (new.target === AbstractSmartComponent) {
-      throw new Error(`Can't instantiate AbstractSmartComponent, only concrete one.`);
+      throw new Error(`Can't instantiate ${new.target.name}, only concrete one.`);
     }
   }
 

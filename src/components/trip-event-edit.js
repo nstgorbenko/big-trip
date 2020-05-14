@@ -1,11 +1,11 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
-import {eventGroups, eventTypesWithPrepositions} from "../const.js";
+import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
 
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
     const lowercaseEventType = eventType.toLowerCase();
-    const isChecked = eventType === currentType;
+    const isChecked = lowercaseEventType === currentType;
 
     return (
       `<div class="event__type-item">
@@ -73,14 +73,14 @@ const createPhotosMarkup = (photos) => {
   }).join(`\n`);
 };
 
-const createTripEventEditTemplate = (tripEvent, options = {}, destinations, allOffers) => {
-  const {start, end, basePrice, offers} = tripEvent;
-  const {type, destination, isFavorite} = options;
+const getTypeWithPreposition = (type) => eventTypeToPreposition.get(type) || ``;
 
-  const eventGroupsMarkup = createEventGroupsMarkup(eventGroups, type);
+const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options = {}) => {
+  const {start, end, basePrice} = tripEvent;
+  const {type, destination, offers, isFavorite} = options;
+
+  const eventGroupsMarkup = createEventGroupsMarkup(eventGroupToTypes, type);
   const destinationsMarkup = createDestinationsMarkup(destinations);
-
-  const isType = !!type;
 
   const isStartTime = !!start;
   const startTime = isStartTime ? formatDateToEventEdit(start) : ``;
@@ -92,7 +92,7 @@ const createTripEventEditTemplate = (tripEvent, options = {}, destinations, allO
 
   const allTripEventOffers = allOffers[type];
   const isOffersType = allTripEventOffers.length > 0;
-  const isInfo = !!description;
+  const isInfo = description.length > 0;
 
   const favorite = isFavorite ? `checked` : ``;
 
@@ -102,7 +102,7 @@ const createTripEventEditTemplate = (tripEvent, options = {}, destinations, allO
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
             <span class="visually-hidden">Choose event type</span>
-            <img class="event__type-icon" width="17" height="17" src="img/icons/${isType ? type.toLowerCase() : `taxi`}.png" alt="Event type icon">
+            <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
           <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -113,7 +113,7 @@ const createTripEventEditTemplate = (tripEvent, options = {}, destinations, allO
 
         <div class="event__field-group  event__field-group--destination">
           <label class="event__label  event__type-output" for="event-destination-1">
-          ${isType ? eventTypesWithPrepositions[type] : `Taxi to`}
+          ${getTypeWithPreposition(type)}
           </label>
           <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
           <datalist id="destination-list-1">
@@ -194,20 +194,23 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
     this._type = tripEvent.type;
     this._destination = tripEvent.destination;
+    this._offers = tripEvent.offers;
     this._isFavorite = tripEvent.isFavorite;
 
     this._favoriteButtonClickHandler = null;
     this._sumbitHandler = null;
+    this._rollupButtonClickHandler = null;
 
     this._subscribeOnEvents();
   }
 
   getTemplate() {
-    return createTripEventEditTemplate(this._tripEvent, {
+    return createTripEventEditTemplate(this._tripEvent, this._destinations, this._allOffers, {
       type: this._type,
       destination: this._destination,
+      offers: this._offers,
       isFavorite: this._isFavorite
-    }, this._destinations, this._allOffers);
+    });
   }
 
   setFavoriteButtonClickHandler(handler) {
@@ -221,9 +224,16 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._sumbitHandler = handler;
   }
 
+  setRollupButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__rollup-btn`)
+      .addEventListener(`click`, handler);
+    this._rollupButtonClickHandler = handler;
+  }
+
   recoveryListeners() {
     this.setFavoriteButtonClickHandler(this._favoriteButtonClickHandler);
     this.setSubmitHandler(this._sumbitHandler);
+    this.setRollupButtonClickHandler(this._rollupButtonClickHandler);
     this._subscribeOnEvents();
   }
 
@@ -241,16 +251,15 @@ export default class TripEventEdit extends AbstractSmartComponent {
     const element = this.getElement();
     const eventDestination = element.querySelector(`.event__input--destination`);
 
-    element.querySelectorAll(`.event__type-input`).forEach((eventType) => {
-      eventType.addEventListener(`change`, (evt) => {
-        let newType = evt.target.value;
-        newType = `${newType[0].toUpperCase()}${newType.slice(1)}`;
+    element.querySelector(`.event__type-list`)
+      .addEventListener(`change`, (evt) => {
+        const newType = evt.target.value;
         if (newType !== this._type) {
           this._type = newType;
+          this._offers = [];
           this.rerender();
         }
       });
-    });
 
     eventDestination.addEventListener(`click`, (evt) => {
       evt.target.value = ``;

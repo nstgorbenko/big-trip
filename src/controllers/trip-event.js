@@ -31,12 +31,15 @@ export default class TripEventController {
     this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, eventToOffers);
 
     this._tripEventComponent.setRollupButtonClickHandler(() => {
-      this._replaceEventToEdit();
-      document.addEventListener(`keydown`, this._onEscKeyDown);
+      this._replaceDefaultToEdit();
+    });
+
+    this._tripEventEditComponent.setRollupButtonClickHandler(() => {
+      this._replaceEditToDefault();
     });
 
     this._tripEventEditComponent.setSubmitHandler(() => {
-      this._replaceEditToEvent();
+      this._replaceEditToDefault();
     });
 
     this._tripEventEditComponent.setFavoriteButtonClickHandler(() => {
@@ -44,7 +47,7 @@ export default class TripEventController {
         type: ActionType.ADD_TO_FAVORITE,
         payload: {
           id: tripEvent.id,
-          tripEventController: this,
+          controller: this,
         }});
     });
 
@@ -58,28 +61,29 @@ export default class TripEventController {
 
   setDefaultView() {
     if (this._mode !== Mode.DEFAULT) {
-      this._replaceEditToEvent();
+      this._replaceEditToDefault();
     }
   }
 
-  _replaceEventToEdit() {
+  _replaceDefaultToEdit() {
     this._dispatch({
       type: ActionType.TO_EDIT,
     });
+    this._tripEventEditComponent.reset();
     replace(this._tripEventEditComponent, this._tripEventComponent);
+    document.addEventListener(`keydown`, this._onEscKeyDown);
     this._mode = Mode.EDIT;
   }
 
-  _replaceEditToEvent() {
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
-    this._tripEventEditComponent.reset();
+  _replaceEditToDefault() {
     replace(this._tripEventComponent, this._tripEventEditComponent);
+    document.removeEventListener(`keydown`, this._onEscKeyDown);
     this._mode = Mode.DEFAULT;
   }
 
   _onEscKeyDown(evt) {
     if (isEscKey(evt)) {
-      this._replaceEditToEvent();
+      this._replaceEditToDefault();
     }
   }
 }

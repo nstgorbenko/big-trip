@@ -112,19 +112,22 @@ export default class TripController {
     this._showedTripEvents.forEach((tripEvent) => tripEvent.setDefaultView());
   }
 
+  _handleAddToFavoriteAction({payload}) {
+    const newTripEvent = this._tripEvents.find(({id}) => id === payload.id);
+    if (newTripEvent) {
+      newTripEvent.isFavorite = !newTripEvent.isFavorite;
+      payload.controller.render(newTripEvent);
+    }
+  }
+
   _dispatch(action) {
     switch (action.type) {
       case ActionType.TO_EDIT:
         this._setDefaultViews();
         break;
-      case ActionType.TO_VIEW:
-        break;
       case ActionType.ADD_TO_FAVORITE:
-        const newTripEvent = this._tripEvents.find(({id}) => id === action.payload.id);
-        if (newTripEvent) {
-          newTripEvent.isFavorite = !newTripEvent.isFavorite;
-          action.payload.tripEventController.render(newTripEvent);
-        }
+        this._handleAddToFavoriteAction(action);
+        break;
     }
   }
 

@@ -1,5 +1,5 @@
 import AbstractComponent from "./abstract-component.js";
-import {eventTypesWithPrepositions} from "../const.js";
+import {eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventDatetime, formatTime} from "../utils/date/formatters.js";
 import {getDuration} from "../utils/date/duration.js";
 
@@ -43,7 +43,7 @@ const createTripEventTemplate = (tripEvent) => {
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type.toLowerCase()}.png" alt="Event type icon">
         </div>
-        <h3 class="event__title">${eventTypesWithPrepositions[type]} ${destination.name}</h3>
+        <h3 class="event__title">${eventTypeToPreposition.get(type)} ${destination.name}</h3>
 
         <div class="event__schedule">
           <p class="event__time">

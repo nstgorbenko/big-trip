@@ -2,7 +2,7 @@ import {getCheckedOffers} from "./offers.js";
 import {getDestination} from "./destination.js";
 import {getRandomIntegerNumber, getRandomArrayItem, getRandomDate, getRandomEndDate} from "./random.js";
 
-const EVENT_TYPES = [`Taxi`, `Bus`, `Train`, `Ship`, `Transport`, `Drive`, `Flight`, `Check-in`, `Sightseeing`, `Restaurant`];
+const EVENT_TYPES = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
 
 const generateEvent = () => {
   const type = getRandomArrayItem(EVENT_TYPES);
