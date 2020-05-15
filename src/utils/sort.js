@@ -4,14 +4,9 @@ export const SortType = {
   DEFAULT: `sort-event`,
 };
 
-const sortEventsByTime = (firstEvent, secondEvent) => {
-  const firstEventDuration = firstEvent.end - firstEvent.start;
-  const secondEventDuration = secondEvent.end - secondEvent.start;
+const sortEventsByTime = (a, b) => (b.end - b.start) - (a.end - a.start);
 
-  return secondEventDuration - firstEventDuration;
-};
-
-const sortEventsByPrice = (firstEvent, secondEvent) => secondEvent.basePrice - firstEvent.basePrice;
+const sortEventsByPrice = (a, b) => b.basePrice - a.basePrice;
 
 export const getSortedTripEvents = ([...tripEvents], sortType) => {
   switch (sortType) {

@@ -3,7 +3,7 @@ import {createElement} from "../utils/dom.js";
 export default class AbstractComponent {
   constructor() {
     if (new.target === AbstractComponent) {
-      throw new Error(`Can't instantiate AbstractComponent, only concrete one.`);
+      throw new Error(`Can't instantiate ${new.target.name}, only concrete one.`);
     }
 
     this._element = null;
