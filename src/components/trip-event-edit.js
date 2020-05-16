@@ -1,6 +1,7 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
+import {setFlatpickr} from "../utils/flatpickr.js";
 
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
@@ -76,8 +77,8 @@ const createPhotosMarkup = (photos) => {
 const getTypeWithPreposition = (type) => eventTypeToPreposition.get(type) || ``;
 
 const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options = {}) => {
-  const {start, end, basePrice} = tripEvent;
-  const {type, destination, offers, isFavorite} = options;
+  const {basePrice} = tripEvent;
+  const {type, destination, start, end, offers, isFavorite} = options;
 
   const eventGroupsMarkup = createEventGroupsMarkup(eventGroupToTypes, type);
   const destinationsMarkup = createDestinationsMarkup(destinations);
@@ -194,13 +195,18 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
     this._type = tripEvent.type;
     this._destination = tripEvent.destination;
+    this._start = tripEvent.start;
+    this._end = tripEvent.end;
     this._offers = tripEvent.offers;
     this._isFavorite = tripEvent.isFavorite;
 
     this._favoriteButtonClickHandler = null;
     this._sumbitHandler = null;
     this._rollupButtonClickHandler = null;
+    this._startFlatpickr = null;
+    this._endFlatpickr = null;
 
+    this._applyFlatpickr();
     this._subscribeOnEvents();
   }
 
@@ -208,6 +214,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
     return createTripEventEditTemplate(this._tripEvent, this._destinations, this._allOffers, {
       type: this._type,
       destination: this._destination,
+      start: this._start,
+      end: this._end,
       offers: this._offers,
       isFavorite: this._isFavorite
     });
@@ -236,15 +244,54 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this.setRollupButtonClickHandler(this._rollupButtonClickHandler);
     this._subscribeOnEvents();
   }
+  rerender() {
+    super.rerender();
+    this._applyFlatpickr();
+  }
 
   reset() {
     const tripEvent = this._tripEvent;
 
     this._type = tripEvent.type;
     this._destination = tripEvent.destination;
+    this._start = tripEvent.start;
+    this._end = tripEvent.end;
+    this._offers = tripEvent.offers;
     this._isFavorite = tripEvent.isFavorite;
 
     this.rerender();
+  }
+
+  _applyFlatpickr() {
+    if (this._startFlatpickr !== null) {
+      this._startFlatpickr.destroy();
+      this._startFlatpickr = null;
+    }
+
+    if (this._endFlatpickr !== null) {
+      this._endFlatpickr.destroy();
+      this._endFlatpickr = null;
+    }
+
+    const startTime = this.getElement().querySelector(`input[name=event-start-time]`);
+    const endTime = this.getElement().querySelector(`input[name=event-end-time]`);
+
+    const startFlatpickr = setFlatpickr(startTime, {
+      defaultDate: this._start,
+      onClose(selectedDates) {
+        endFlatpickr.set(`minDate`, selectedDates[0]);
+      }
+    });
+
+    const endFlatpickr = setFlatpickr(endTime, {
+      defaultDate: this._end,
+      onClose(selectedDates) {
+        startFlatpickr.set(`maxDate`, selectedDates[0]);
+      }
+    });
+
+    this._startFlatpickr = startFlatpickr;
+    this._endFlatpickr = endFlatpickr;
   }
 
   _subscribeOnEvents() {
