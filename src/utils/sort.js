@@ -1,7 +1,7 @@
 export const SortType = {
+  DEFAULT: `sort-event`,
   TIME: `sort-time`,
   PRICE: `sort-price`,
-  DEFAULT: `sort-event`,
 };
 
 const sortEventsByTime = (a, b) => (b.end - b.start) - (a.end - a.start);

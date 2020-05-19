@@ -43,8 +43,17 @@ const getTripDates = (tripEvents) => {
   return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDate}`;
 };
 
+const reduceOffersCost = (cost, {price}) => cost + price;
+const reduceEventsCost = (cost, {basePrice, offers}) =>
+  offers.length > 0
+    ? offers.reduce(reduceOffersCost, cost + basePrice)
+    : cost + basePrice;
+
+const getTotalCost = (tripEvents) => tripEvents.reduce(reduceEventsCost, 0);
+
 const createTripInfoTemplate = (tripEvents) => {
   const noEvents = tripEvents.length === 0;
+  const totalCost = getTotalCost(tripEvents);
 
   return (
     `<section class="trip-main__trip-info  trip-info">
@@ -53,7 +62,10 @@ const createTripInfoTemplate = (tripEvents) => {
         <h1 class="trip-info__title">${getTripTitle(tripEvents)}</h1>
 
         <p class="trip-info__dates">${getTripDates(tripEvents)}</p>
-    </div>`}
+      </div>`}
+      <p class="trip-info__cost">
+        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
+      </p>
     </section>`
   );
 };

@@ -51,6 +51,11 @@ export default class Sort extends AbstractComponent {
     return this._currenSortType;
   }
 
+  setDefault() {
+    this._currenSortType = SortType.DEFAULT;
+    this.getElement().querySelector(`#${SortType.DEFAULT}`).checked = true;
+  }
+
   setSortTypeChangeHandler(handler) {
     this.getElement().addEventListener(`change`, (evt) => {
       const sortType = evt.target.value;

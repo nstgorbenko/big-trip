@@ -8,4 +8,5 @@ const defaultConfig = {
   'time_24hr': true,
 };
 
-export const setFlatpickr = (inputElement, options = {}) => flatpickr(inputElement, Object.assign({}, defaultConfig, options));
+export const createFlatpickr = (element, options = {}) =>
+  flatpickr(element, Object.assign({}, defaultConfig, options));

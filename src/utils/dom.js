@@ -7,6 +7,11 @@ export const createElement = (template) => {
   return newElement.firstChild;
 };
 
+export const remove = (component) => {
+  component.getElement().remove();
+  component.removeElement();
+};
+
 export const render = (container, component, place = RenderPosition.BEFOREEND) => {
   switch (place) {
     case RenderPosition.BEFOREBEGIN:
