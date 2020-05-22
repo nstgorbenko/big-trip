@@ -35,7 +35,7 @@ const createTripEventTemplate = (tripEvent) => {
   const endDatetime = formatDateToEventDatetime(end);
   const endTime = formatTime(end);
 
-  const duration = getDuration(start, end);
+  const duration = getDuration(end, start);
 
   return (
     `<li class="trip-events__item">

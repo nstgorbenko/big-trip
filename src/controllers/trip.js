@@ -6,6 +6,7 @@ import TripEventController from "./trip-event.js";
 import TripMessageComponent from "../components/trip-message.js";
 import {formatDateToDayDatetime} from "../utils/date/formatters.js";
 import {getSortedTripEvents} from "../utils/sort.js";
+import {HIDDEN_CLASS} from "../const.js";
 import {ActionType, EmptyEvent, Message, Mode, SortType} from "../const.js";
 import {remove, render} from "../utils/dom.js";
 
@@ -117,6 +118,14 @@ export default class TripController {
       this._setDefaultViews();
       this._renderNewEvent(this._tripDaysComponent.getElement(), Mode.ADD);
     }
+  }
+
+  hide() {
+    this._container.classList.add(HIDDEN_CLASS);
+  }
+
+  show() {
+    this._container.classList.remove(HIDDEN_CLASS);
   }
 
   _renderFirstBoard(tripEvents) {

@@ -1,4 +1,5 @@
 import {createElement} from "../utils/dom.js";
+import {HIDDEN_CLASS} from "../const.js";
 
 export default class AbstractComponent {
   constructor() {
@@ -20,7 +21,19 @@ export default class AbstractComponent {
     return this._element;
   }
 
+  hide() {
+    if (this._element) {
+      this._element.classList.add(HIDDEN_CLASS);
+    }
+  }
+
   removeElement() {
     this._element = null;
+  }
+
+  show() {
+    if (this._element) {
+      this._element.classList.remove(HIDDEN_CLASS);
+    }
   }
 }
