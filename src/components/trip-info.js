@@ -1,12 +1,14 @@
 import AbstractComponent from "./abstract-component.js";
 import {formatDateToTripInfo} from "../utils/date/formatters.js";
+import {getTotalCost} from "../utils/cost.js";
 
 const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
 
 const getTripTitle = (tripEvents) => {
-  const startPointName = tripEvents[0].destination.name;
-  const endPointName = tripEvents[tripEvents.length - 1].destination.name;
-  const allPoints = Array.from(tripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
+  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
+  const startPointName = sortedTripEvents[0].destination.name;
+  const endPointName = sortedTripEvents[sortedTripEvents.length - 1].destination.name;
+  const allPoints = Array.from(sortedTripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
 
   if (allPoints.length === 1) {
     return startPointName;
@@ -26,10 +28,11 @@ const getTripTitle = (tripEvents) => {
 };
 
 const getTripDates = (tripEvents) => {
-  const startPointDate = formatDateToTripInfo(tripEvents[0].start);
+  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
+  const startPointDate = formatDateToTripInfo(sortedTripEvents[0].start);
   const startPointMonth = startPointDate.slice(0, 3);
 
-  const endPointDate = formatDateToTripInfo(tripEvents[tripEvents.length - 1].end);
+  const endPointDate = formatDateToTripInfo(sortedTripEvents[sortedTripEvents.length - 1].end);
   const endPointMonth = endPointDate.slice(0, 3);
   const endPointDay = endPointDate.slice(-2);
 
@@ -45,6 +48,7 @@ const getTripDates = (tripEvents) => {
 
 const createTripInfoTemplate = (tripEvents) => {
   const noEvents = tripEvents.length === 0;
+  const totalCost = getTotalCost(tripEvents);
 
   return (
     `<section class="trip-main__trip-info  trip-info">
@@ -53,7 +57,10 @@ const createTripInfoTemplate = (tripEvents) => {
         <h1 class="trip-info__title">${getTripTitle(tripEvents)}</h1>
 
         <p class="trip-info__dates">${getTripDates(tripEvents)}</p>
-    </div>`}
+      </div>`}
+      <p class="trip-info__cost">
+        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
+      </p>
     </section>`
   );
 };

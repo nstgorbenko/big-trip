@@ -1,7 +1,13 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
+import {createFlatpickr} from "../utils/flatpickr.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
-import {setFlatpickr} from "../utils/flatpickr.js";
+
+const EmptyDestination = {
+  name: ``,
+  description: ``,
+  photos: [],
+};
 
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
@@ -51,12 +57,13 @@ const getOffers = (allOffers, checkedOffers) =>
 
 const createOffersMarkup = (offers) => {
   return offers.map((offer, index) => {
-    const {id, title, price, isChecked} = offer;
+    const {title, price, isChecked} = offer;
+    const inputName = title.toLowerCase();
 
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-${index}" type="checkbox" name="event-offer-${id}" ${isChecked ? `checked` : ``}>
-        <label class="event__offer-label" for="event-offer-${id}-${index}">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${inputName}-${index}" type="checkbox" name="${inputName}" ${isChecked ? `checked` : ``} value="${price}">
+        <label class="event__offer-label" for="event-offer-${inputName}-${index}">
           <span class="event__offer-title">${title}</span>
           +
           €&nbsp;<span class="event__offer-price">${price}</span>
@@ -77,12 +84,13 @@ const createPhotosMarkup = (photos) => {
 const getTypeWithPreposition = (type) => eventTypeToPreposition.get(type) || ``;
 
 const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options = {}) => {
-  const {basePrice} = tripEvent;
-  const {type, destination, start, end, offers, isFavorite} = options;
+  const {id, basePrice, isFavorite} = tripEvent;
+  const {type, destination, start, end, offers} = options;
 
   const eventGroupsMarkup = createEventGroupsMarkup(eventGroupToTypes, type);
   const destinationsMarkup = createDestinationsMarkup(destinations);
 
+  const isNewEvent = !id;
   const isStartTime = !!start;
   const startTime = isStartTime ? formatDateToEventEdit(start) : ``;
   const isEndTime = !!start;
@@ -93,7 +101,8 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
 
   const allTripEventOffers = allOffers[type];
   const isOffersType = allTripEventOffers.length > 0;
-  const isInfo = description.length > 0;
+  const isInfo = description.length > 0 || photos.length > 0;
+  const isEventDetails = isOffersType || isInfo;
 
   const favorite = isFavorite ? `checked` : ``;
 
@@ -139,26 +148,26 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" min="0" name="event-price" value="${basePrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
+        <button class="event__reset-btn" type="reset">${isNewEvent ? `Cancel` : `Delete`}</button>
+      ${isNewEvent ? `` :
+      `<input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favorite}>
+      <label class="event__favorite-btn" for="event-favorite-1">
+        <span class="visually-hidden">Add to favorite</span>
+        <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
+          <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
+        </svg>
+      </label>
 
-        <input id="event-favorite-1" class="event__favorite-checkbox  visually-hidden" type="checkbox" name="event-favorite" ${favorite}>
-        <label class="event__favorite-btn" for="event-favorite-1">
-          <span class="visually-hidden">Add to favorite</span>
-          <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
-            <path d="M14 21l-8.22899 4.3262 1.57159-9.1631L.685209 9.67376 9.8855 8.33688 14 0l4.1145 8.33688 9.2003 1.33688-6.6574 6.48934 1.5716 9.1631L14 21z"/>
-          </svg>
-        </label>
-
-        <button class="event__rollup-btn" type="button">
-          <span class="visually-hidden">Open event</span>
-        </button>
+      <button class="event__rollup-btn" type="button">
+        <span class="visually-hidden">Open event</span>
+      </button>`}
       </header>
-
-      <section class="event__details">
+      ${isEventDetails ?
+      `<section class="event__details">
     ${isOffersType ?
       `<section class="event__section  event__section--offers">
         <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -180,7 +189,7 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
         </div>
       </section>` : ``}
 
-      </section>
+      </section>` : ``}
     </form>`
   );
 };
@@ -198,11 +207,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
     this._start = tripEvent.start;
     this._end = tripEvent.end;
     this._offers = tripEvent.offers;
-    this._isFavorite = tripEvent.isFavorite;
 
     this._favoriteButtonClickHandler = null;
-    this._sumbitHandler = null;
+    this._submitHandler = null;
     this._rollupButtonClickHandler = null;
+    this._deleteButtonClickHandler = null;
     this._startFlatpickr = null;
     this._endFlatpickr = null;
 
@@ -216,34 +225,79 @@ export default class TripEventEdit extends AbstractSmartComponent {
       destination: this._destination,
       start: this._start,
       end: this._end,
-      offers: this._offers,
-      isFavorite: this._isFavorite
+      offers: this._offers
     });
   }
 
+  getData() {
+    const form = this.getElement();
+    const formData = new FormData(form);
+
+    const type = formData.get(`event-type`);
+
+    const destinationName = formData.get(`event-destination`);
+    const destination = this._destinations.find(({name}) => name === destinationName) || EmptyDestination;
+
+    const offerInputs = Array.from(this.getElement().querySelectorAll(`.event__offer-checkbox:checked`));
+    const offers = offerInputs.map(({name, value}) => {
+      const offerTitle = name[0].toUpperCase() + name.slice(1);
+      return {title: offerTitle, price: +value};
+    });
+
+    return {
+      id: this._tripEvent.id,
+      type,
+      destination,
+      start: new Date(formData.get(`event-start-time`)),
+      end: new Date(formData.get(`event-end-time`)),
+      basePrice: +formData.get(`event-price`),
+      offers,
+      isFavorite: formData.has(`event-favorite`),
+    };
+  }
+
   setFavoriteButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__favorite-checkbox`)
-      .addEventListener(`change`, handler);
     this._favoriteButtonClickHandler = handler;
+
+    const favoriteButton = this.getElement().querySelector(`.event__favorite-checkbox`);
+    if (favoriteButton) {
+      favoriteButton.addEventListener(`change`, handler);
+    }
   }
 
   setSubmitHandler(handler) {
     this.getElement().addEventListener(`submit`, handler);
-    this._sumbitHandler = handler;
+    this._submitHandler = handler;
   }
 
   setRollupButtonClickHandler(handler) {
-    this.getElement().querySelector(`.event__rollup-btn`)
-      .addEventListener(`click`, handler);
     this._rollupButtonClickHandler = handler;
+
+    const rollupButton = this.getElement().querySelector(`.event__rollup-btn`);
+    if (rollupButton) {
+      rollupButton.addEventListener(`click`, handler);
+    }
+  }
+
+  setDeleteButtonClickHandler(handler) {
+    this.getElement().querySelector(`.event__reset-btn`)
+      .addEventListener(`click`, handler);
+    this._deleteButtonClickHandler = handler;
   }
 
   recoveryListeners() {
     this.setFavoriteButtonClickHandler(this._favoriteButtonClickHandler);
-    this.setSubmitHandler(this._sumbitHandler);
+    this.setSubmitHandler(this._submitHandler);
     this.setRollupButtonClickHandler(this._rollupButtonClickHandler);
+    this.setDeleteButtonClickHandler(this._deleteButtonClickHandler);
     this._subscribeOnEvents();
   }
+
+  removeElement() {
+    this._removeFlatpickr();
+    super.removeElement();
+  }
+
   rerender() {
     super.rerender();
     this._applyFlatpickr();
@@ -263,6 +317,29 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   _applyFlatpickr() {
+    this._removeFlatpickr();
+
+    const startTime = this.getElement().querySelector(`input[name=event-start-time]`);
+    const endTime = this.getElement().querySelector(`input[name=event-end-time]`);
+
+    this._startFlatpickr = createFlatpickr(startTime, {
+      defaultDate: this._start,
+      maxDate: this._end,
+      onClose: ([dateStart]) => {
+        this._endFlatpickr.set(`minDate`, dateStart);
+      },
+    });
+
+    this._endFlatpickr = createFlatpickr(endTime, {
+      defaultDate: this._end,
+      minDate: this._start,
+      onClose: ([dateEnd]) => {
+        this._startFlatpickr.set(`maxDate`, dateEnd);
+      }
+    });
+  }
+
+  _removeFlatpickr() {
     if (this._startFlatpickr !== null) {
       this._startFlatpickr.destroy();
       this._startFlatpickr = null;
@@ -272,26 +349,6 @@ export default class TripEventEdit extends AbstractSmartComponent {
       this._endFlatpickr.destroy();
       this._endFlatpickr = null;
     }
-
-    const startTime = this.getElement().querySelector(`input[name=event-start-time]`);
-    const endTime = this.getElement().querySelector(`input[name=event-end-time]`);
-
-    const startFlatpickr = setFlatpickr(startTime, {
-      defaultDate: this._start,
-      onClose(selectedDates) {
-        endFlatpickr.set(`minDate`, selectedDates[0]);
-      }
-    });
-
-    const endFlatpickr = setFlatpickr(endTime, {
-      defaultDate: this._end,
-      onClose(selectedDates) {
-        startFlatpickr.set(`maxDate`, selectedDates[0]);
-      }
-    });
-
-    this._startFlatpickr = startFlatpickr;
-    this._endFlatpickr = endFlatpickr;
   }
 
   _subscribeOnEvents() {
@@ -300,19 +357,25 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
     element.querySelector(`.event__type-list`)
       .addEventListener(`change`, (evt) => {
-        const newType = evt.target.value;
-        if (newType !== this._type) {
-          this._type = newType;
-          this._offers = [];
-          this.rerender();
-        }
+        this._type = evt.target.value;
+        this._offers = [];
+        this.rerender();
       });
 
-    eventDestination.addEventListener(`click`, (evt) => {
-      evt.target.value = ``;
+    eventDestination.addEventListener(`focus`, (evt) => {
+      const target = evt.target;
+
+      target.placeholder = target.value;
+      target.value = ``;
+
+      eventDestination.addEventListener(`blur`, () => {
+        if (target.value.length === 0) {
+          target.value = target.placeholder;
+        }
+      }, {once: true});
     });
 
-    eventDestination.addEventListener(`change`, (evt) => {
+    eventDestination.addEventListener(`input`, (evt) => {
       const newDestinationName = evt.target.value;
       const newDestinationIndex = this._destinations.findIndex(({name}) => name === newDestinationName);
 

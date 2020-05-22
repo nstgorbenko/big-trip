@@ -4,8 +4,10 @@ import "flatpickr/dist/flatpickr.min.css";
 const defaultConfig = {
   'altInput': true,
   'altFormat': `d/m/y H:i`,
+  'dateFormat': `Z`,
   'enableTime': true,
   'time_24hr': true,
 };
 
-export const setFlatpickr = (inputElement, options = {}) => flatpickr(inputElement, Object.assign({}, defaultConfig, options));
+export const createFlatpickr = (element, options = {}) =>
+  flatpickr(element, Object.assign({}, defaultConfig, options));
