@@ -26,24 +26,30 @@ const createFilterTemplate = (filters) => {
 
 
 export default class Filter extends AbstractComponent {
-  constructor(filters) {
+  constructor(filters, activeFilter) {
     super();
 
     this._filters = filters;
+    this._activeType = activeFilter;
   }
 
   getTemplate() {
     return createFilterTemplate(this._filters);
   }
 
+  getActiveType() {
+    return this._activeType;
+  }
+
   setDefault() {
+    this._activeType = FilterType.ALL;
     this.getElement().querySelector(`#filter-${FilterType.ALL}`).checked = true;
   }
 
-  setFilterChangeHandler(handler) {
+  setChangeHandler(handler) {
     this.getElement().addEventListener(`change`, (evt) => {
-      const newFilterType = evt.target.value;
-      handler(newFilterType);
+      this._activeType = evt.target.value;
+      handler(evt.target.value);
     });
   }
 }

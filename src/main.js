@@ -8,10 +8,10 @@ import {render} from "./utils/dom.js";
 import {RenderPosition} from "./const.js";
 
 const EVENT_COUNT = 20;
-const tripEvents = generateEvents(EVENT_COUNT).sort((a, b) => a.start - b.start);
+const tripEvents = generateEvents(EVENT_COUNT);
 
 const tripEventsModel = new TripEventsModel();
-tripEventsModel.setEvents(tripEvents);
+tripEventsModel.set(tripEvents);
 
 const tripBoard = document.querySelector(`.trip-events`);
 const tripController = new TripController(tripBoard, tripEventsModel);
@@ -31,7 +31,7 @@ filterController.render();
 const addNewEvent = tripMain.querySelector(`.trip-main__event-add-btn`);
 addNewEvent.addEventListener(`click`, () => {
   addNewEvent.disabled = true;
-  filterController.setDefaultFilterType();
+  filterController.setDefault();
   tripController.createEvent();
 });
 

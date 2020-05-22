@@ -5,8 +5,8 @@ import TripDaysComponent from "../components/trip-days.js";
 import TripEventController from "./trip-event.js";
 import TripMessageComponent from "../components/trip-message.js";
 import {formatDateToDayDatetime} from "../utils/date/formatters.js";
-import {getSortedTripEvents, SortType} from "../utils/sort.js";
-import {ActionType, EmptyEvent, Message, Mode} from "../const.js";
+import {getSortedTripEvents} from "../utils/sort.js";
+import {ActionType, EmptyEvent, Message, Mode, SortType} from "../const.js";
 import {remove, render} from "../utils/dom.js";
 
 const groupEventsByDays = (someEvents) => {
@@ -95,9 +95,9 @@ export default class TripController {
   }
 
   render() {
-    const tripEvents = this._tripEventsModel.getAllEvents();
+    const tripEvents = this._tripEventsModel.getAll();
 
-    if (tripEvents.length === 0) {
+    if (this._tripEventsModel.isEmpty()) {
       this._renderTripMessage(Message.NO_EVENTS);
       return;
     }
@@ -110,9 +110,7 @@ export default class TripController {
       return;
     }
 
-    const tripEvents = this._tripEventsModel.getAllEvents();
-
-    if (tripEvents.length === 0) {
+    if (this._tripEventsModel.isEmpty()) {
       remove(this._tripMessageComponent);
       this._renderNewEvent(this._container, Mode.FIRST);
     } else {
@@ -129,7 +127,7 @@ export default class TripController {
     render(this._container, this._tripDaysComponent);
 
     const tripDays = this._tripDaysComponent.getElement();
-    this._showedTripEvents = renderAllEvents(tripDays, tripEvents, this._dispatch);
+    this._showedTripEvents = renderSortedTripEvents(SortType.DEFAULT, tripDays, tripEvents, this._dispatch);
   }
 
   _renderNewEvent(container, mode) {
@@ -166,8 +164,8 @@ export default class TripController {
 
   _updateEvents(sortType) {
     const tripDays = this._tripDaysComponent.getElement();
-    const tripEvents = this._tripEventsModel.getEvents();
-    const newSortType = sortType || this._sortComponent.getSortType();
+    const tripEvents = this._tripEventsModel.get();
+    const newSortType = sortType || this._sortComponent.getActiveType();
 
     this._removeEvents();
     this._tripDaysComponent.clear();
@@ -175,18 +173,14 @@ export default class TripController {
   }
 
   _handleAddToFavoriteAction({payload}) {
-    const updatedEvent = this._tripEventsModel.addToFavoritesTripEvent(payload.id);
-
-    if (updatedEvent) {
-      payload.controller.render(updatedEvent, Mode.EDIT);
-    }
+    this._tripEventsModel.update(payload.id, payload.newData);
+    payload.controller.render(payload.newData, Mode.EDIT);
   }
 
   _handleDeleteAction({payload}) {
-    this._tripEventsModel.deleteTripEvent(payload.id);
+    this._tripEventsModel.deleteEvent(payload.id);
 
-    const allTripEvents = this._tripEventsModel.getAllEvents();
-    if (allTripEvents.length === 0) {
+    if (this._tripEventsModel.isEmpty()) {
       this._removeFirstBoard();
       return;
     }
@@ -196,7 +190,7 @@ export default class TripController {
   _handleRemoveNewEventAction() {
     this._removeNewEvent();
 
-    if (this._tripEventsModel.getAllEvents().length === 0) {
+    if (this._tripEventsModel.isEmpty()) {
       this._renderTripMessage(Message.NO_EVENTS);
     }
   }
@@ -210,15 +204,15 @@ export default class TripController {
 
   _handleUpdateAction({payload}) {
     if (payload.id) {
-      this._tripEventsModel.updateTripEvent(payload.id, payload.newData);
+      this._tripEventsModel.update(payload.id, payload.newData);
       this._updateEvents();
       return;
     }
 
-    this._tripEventsModel.addTripEvent(payload.newData);
+    this._tripEventsModel.add(payload.newData);
     this._removeNewEvent();
 
-    const tripEvents = this._tripEventsModel.getAllEvents();
+    const tripEvents = this._tripEventsModel.getAll();
     if (tripEvents.length === 1) {
       this._renderFirstBoard(tripEvents);
     } else {

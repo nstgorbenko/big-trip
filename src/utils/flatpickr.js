@@ -4,6 +4,7 @@ import "flatpickr/dist/flatpickr.min.css";
 const defaultConfig = {
   'altInput': true,
   'altFormat': `d/m/y H:i`,
+  'dateFormat': `Z`,
   'enableTime': true,
   'time_24hr': true,
 };

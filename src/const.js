@@ -44,3 +44,9 @@ export const RenderPosition = {
   BEFOREEND: `beforeend`,
   AFTEREND: `afterend`,
 };
+
+export const SortType = {
+  DEFAULT: `sort-event`,
+  TIME: `sort-time`,
+  PRICE: `sort-price`,
+};

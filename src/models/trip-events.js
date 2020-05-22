@@ -1,5 +1,5 @@
 import {FilterType} from "../const.js";
-import {getEventsByFilter} from "../utils/common.js";
+import {getEventsByFilter} from "../utils/filter.js";
 
 export default class TripEvents {
   constructor() {
@@ -10,71 +10,67 @@ export default class TripEvents {
     this._filterChangeHandlers = [];
   }
 
-  getAllEvents() {
+  getAll() {
     return this._tripEvents;
   }
 
-  getEvents() {
+  get() {
     return getEventsByFilter(this._tripEvents, this._activeFilterType);
   }
 
-  setEvents(tripEvents) {
+  set(tripEvents) {
     this._tripEvents = Array.from(tripEvents);
-    this._callHandlers(this._dataChangeHandlers);
+    TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
   setFilter(filterType) {
     this._activeFilterType = filterType;
-    this._callHandlers(this._filterChangeHandlers);
+    TripEvents.callHandlers(this._filterChangeHandlers);
   }
 
-  addTripEvent(newEvent) {
+  isEmpty() {
+    return this.getAll().length === 0;
+  }
+
+  add(newEvent) {
     const newTripEvent = Object.assign({}, newEvent, {
       id: String(new Date() + Math.random())
     });
-    this._tripEvents.push(newTripEvent);
-    this._tripEvents.sort((a, b) => a.start - b.start);
-    this._callHandlers(this._dataChangeHandlers);
+    this._tripEvents = [...this._tripEvents, newTripEvent];
+    TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
-  deleteTripEvent(id) {
-    const index = this._tripEvents.findIndex((tripEvent) => tripEvent.id === id);
+  deleteEvent(id) {
+    const index = this._getEventIndex(id);
 
     if (index === -1) {
       return false;
     }
 
-    this._tripEvents = [].concat(this._tripEvents.slice(0, index), this._tripEvents.slice(index + 1));
-    this._callHandlers(this._dataChangeHandlers);
+    this._tripEvents = [
+      ...this._tripEvents.slice(0, index),
+      ...this._tripEvents.slice(index + 1)
+    ];
+    TripEvents.callHandlers(this._dataChangeHandlers);
 
     return true;
   }
 
-  updateTripEvent(id, updatedEvent) {
-    const index = this._tripEvents.findIndex((tripEvent) => tripEvent.id === id);
+  update(id, updatedEvent) {
+    const index = this._getEventIndex(id);
 
     if (index === -1) {
       return false;
     }
 
-    this._tripEvents[index] = updatedEvent;
-    this._tripEvents.sort((a, b) => a.start - b.start);
-    this._callHandlers(this._dataChangeHandlers);
+    this._tripEvents = [
+      ...this._tripEvents.slice(0, index),
+      updatedEvent,
+      ...this._tripEvents.slice(index + 1)
+    ];
+    TripEvents.callHandlers(this._dataChangeHandlers);
 
     return true;
-  }
-
-  addToFavoritesTripEvent(id) {
-    const index = this._tripEvents.findIndex((tripEvent) => tripEvent.id === id);
-
-    if (index === -1) {
-      return false;
-    }
-
-    const updatedEvent = this._tripEvents[index];
-    updatedEvent.isFavorite = !updatedEvent.isFavorite;
-
-    return updatedEvent;
   }
 
   setFilterChangeHandler(handler) {
@@ -85,7 +81,12 @@ export default class TripEvents {
     this._dataChangeHandlers.push(handler);
   }
 
-  _callHandlers(handlers) {
+  _getEventIndex(id) {
+    return this._tripEvents.findIndex((tripEvent) => tripEvent.id === id);
+  }
+
+  static callHandlers(handlers) {
     handlers.forEach((handler) => handler());
   }
 }
+

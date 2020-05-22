@@ -1,12 +1,14 @@
 import AbstractComponent from "./abstract-component.js";
 import {formatDateToTripInfo} from "../utils/date/formatters.js";
+import {getTotalCost} from "../utils/cost.js";
 
 const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
 
 const getTripTitle = (tripEvents) => {
-  const startPointName = tripEvents[0].destination.name;
-  const endPointName = tripEvents[tripEvents.length - 1].destination.name;
-  const allPoints = Array.from(tripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
+  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
+  const startPointName = sortedTripEvents[0].destination.name;
+  const endPointName = sortedTripEvents[sortedTripEvents.length - 1].destination.name;
+  const allPoints = Array.from(sortedTripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
 
   if (allPoints.length === 1) {
     return startPointName;
@@ -26,10 +28,11 @@ const getTripTitle = (tripEvents) => {
 };
 
 const getTripDates = (tripEvents) => {
-  const startPointDate = formatDateToTripInfo(tripEvents[0].start);
+  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
+  const startPointDate = formatDateToTripInfo(sortedTripEvents[0].start);
   const startPointMonth = startPointDate.slice(0, 3);
 
-  const endPointDate = formatDateToTripInfo(tripEvents[tripEvents.length - 1].end);
+  const endPointDate = formatDateToTripInfo(sortedTripEvents[sortedTripEvents.length - 1].end);
   const endPointMonth = endPointDate.slice(0, 3);
   const endPointDay = endPointDate.slice(-2);
 
@@ -42,14 +45,6 @@ const getTripDates = (tripEvents) => {
 
   return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDate}`;
 };
-
-const reduceOffersCost = (cost, {price}) => cost + price;
-const reduceEventsCost = (cost, {basePrice, offers}) =>
-  offers.length > 0
-    ? offers.reduce(reduceOffersCost, cost + basePrice)
-    : cost + basePrice;
-
-const getTotalCost = (tripEvents) => tripEvents.reduce(reduceEventsCost, 0);
 
 const createTripInfoTemplate = (tripEvents) => {
   const noEvents = tripEvents.length === 0;

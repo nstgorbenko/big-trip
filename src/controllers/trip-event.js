@@ -27,52 +27,11 @@ export default class TripEventController {
     this._tripEventComponent = new TripEventComponent(tripEvent);
     this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, eventToOffers);
 
-    this._tripEventComponent.setRollupButtonClickHandler(() => {
-      this._replaceDefaultToEdit();
-    });
-
-    this._tripEventEditComponent.setRollupButtonClickHandler(() => {
-      this._replaceEditToDefault();
-    });
-
-    this._tripEventEditComponent.setSubmitHandler(() => {
-      const data = this._tripEventEditComponent.getData();
-      this._dispatch({
-        type: ActionType.UPDATE,
-        payload: {
-          id: tripEvent.id,
-          controller: this,
-          newData: data
-        }});
-    });
-
-    this._tripEventEditComponent.setFavoriteButtonClickHandler(() => {
-      this._dispatch({
-        type: ActionType.ADD_TO_FAVORITE,
-        payload: {
-          id: tripEvent.id,
-          controller: this,
-        }});
-    });
-
-    this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
-      if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
-        this._dispatch({
-          type: ActionType.REMOVE_NEW_EVENT,
-        });
-      } else {
-        this._dispatch({
-          type: ActionType.DELETE,
-          payload: {
-            id: tripEvent.id
-          }
-        });
-      }
-    });
+    this._subscribeOnEvents(tripEvent);
 
     switch (mode) {
       case Mode.DEFAULT:
-        if (oldTripEventComponent && oldTripEventEditComponent) {
+        if (oldTripEventComponent !== null && oldTripEventEditComponent !== null) {
           this._replaceOldEventComponents(oldTripEventComponent, oldTripEventEditComponent);
           this._replaceEditToDefault();
         } else {
@@ -126,6 +85,54 @@ export default class TripEventController {
     replace(this._tripEventEditComponent, oldTripEventEditComponent);
     remove(oldTripEventComponent);
     remove(oldTripEventEditComponent);
+  }
+
+  _subscribeOnEvents(tripEvent) {
+    this._tripEventComponent.setRollupButtonClickHandler(() => {
+      this._replaceDefaultToEdit();
+    });
+
+    this._tripEventEditComponent.setRollupButtonClickHandler(() => {
+      this._replaceEditToDefault();
+    });
+
+    this._tripEventEditComponent.setSubmitHandler(() => {
+      const data = this._tripEventEditComponent.getData();
+      this._dispatch({
+        type: ActionType.UPDATE,
+        payload: {
+          id: tripEvent.id,
+          controller: this,
+          newData: data
+        }});
+    });
+
+    this._tripEventEditComponent.setFavoriteButtonClickHandler(() => {
+      this._dispatch({
+        type: ActionType.ADD_TO_FAVORITE,
+        payload: {
+          id: tripEvent.id,
+          controller: this,
+          newData: Object.assign({}, tripEvent, {
+            isFavorite: !tripEvent.isFavorite
+          })
+        }});
+    });
+
+    this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
+      if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
+        this._dispatch({
+          type: ActionType.REMOVE_NEW_EVENT,
+        });
+      } else {
+        this._dispatch({
+          type: ActionType.DELETE,
+          payload: {
+            id: tripEvent.id
+          }
+        });
+      }
+    });
   }
 
   _onEscKeyDown(evt) {

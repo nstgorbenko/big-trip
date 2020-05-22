@@ -2,7 +2,12 @@ import AbstractSmartComponent from "./abstract-smart-component.js";
 import {createFlatpickr} from "../utils/flatpickr.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date/formatters.js";
-import {parseFormData} from "../utils/form-data.js";
+
+const EmptyDestination = {
+  name: ``,
+  description: ``,
+  photos: [],
+};
 
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
@@ -52,12 +57,13 @@ const getOffers = (allOffers, checkedOffers) =>
 
 const createOffersMarkup = (offers) => {
   return offers.map((offer, index) => {
-    const {id, title, price, isChecked} = offer;
+    const {title, price, isChecked} = offer;
+    const inputName = title.toLowerCase();
 
     return (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}-${index}" type="checkbox" name="event-offer-${id}" ${isChecked ? `checked` : ``}>
-        <label class="event__offer-label" for="event-offer-${id}-${index}">
+        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${inputName}-${index}" type="checkbox" name="${inputName}" ${isChecked ? `checked` : ``} value="${price}">
+        <label class="event__offer-label" for="event-offer-${inputName}-${index}">
           <span class="event__offer-title">${title}</span>
           +
           €&nbsp;<span class="event__offer-price">${price}</span>
@@ -142,7 +148,7 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="number" name="event-price" value="${basePrice}">
+          <input class="event__input  event__input--price" id="event-price-1" type="number" min="0" name="event-price" value="${basePrice}">
         </div>
 
         <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -227,14 +233,35 @@ export default class TripEventEdit extends AbstractSmartComponent {
     const form = this.getElement();
     const formData = new FormData(form);
 
-    return parseFormData(this._tripEvent.id, this, formData, this._destinations, this._allOffers);
+    const type = formData.get(`event-type`);
+
+    const destinationName = formData.get(`event-destination`);
+    const destination = this._destinations.find(({name}) => name === destinationName) || EmptyDestination;
+
+    const offerInputs = Array.from(this.getElement().querySelectorAll(`.event__offer-checkbox:checked`));
+    const offers = offerInputs.map(({name, value}) => {
+      const offerTitle = name[0].toUpperCase() + name.slice(1);
+      return {title: offerTitle, price: +value};
+    });
+
+    return {
+      id: this._tripEvent.id,
+      type,
+      destination,
+      start: new Date(formData.get(`event-start-time`)),
+      end: new Date(formData.get(`event-end-time`)),
+      basePrice: +formData.get(`event-price`),
+      offers,
+      isFavorite: formData.has(`event-favorite`),
+    };
   }
 
   setFavoriteButtonClickHandler(handler) {
+    this._favoriteButtonClickHandler = handler;
+
     const favoriteButton = this.getElement().querySelector(`.event__favorite-checkbox`);
     if (favoriteButton) {
       favoriteButton.addEventListener(`change`, handler);
-      this._favoriteButtonClickHandler = handler;
     }
   }
 
@@ -244,10 +271,11 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   setRollupButtonClickHandler(handler) {
+    this._rollupButtonClickHandler = handler;
+
     const rollupButton = this.getElement().querySelector(`.event__rollup-btn`);
     if (rollupButton) {
       rollupButton.addEventListener(`click`, handler);
-      this._rollupButtonClickHandler = handler;
     }
   }
 
@@ -327,25 +355,24 @@ export default class TripEventEdit extends AbstractSmartComponent {
     const element = this.getElement();
     const eventDestination = element.querySelector(`.event__input--destination`);
 
-    element.querySelector(`.event__input--price`)
-      .addEventListener(`input`, (evt) => {
-        if (evt.target.value < 0) {
-          evt.target.value = 0;
-        }
-      });
-
     element.querySelector(`.event__type-list`)
       .addEventListener(`change`, (evt) => {
-        const newType = evt.target.value;
-        if (newType !== this._type) {
-          this._type = newType;
-          this._offers = [];
-          this.rerender();
-        }
+        this._type = evt.target.value;
+        this._offers = [];
+        this.rerender();
       });
 
-    eventDestination.addEventListener(`click`, (evt) => {
-      evt.target.value = ``;
+    eventDestination.addEventListener(`focus`, (evt) => {
+      const target = evt.target;
+
+      target.placeholder = target.value;
+      target.value = ``;
+
+      eventDestination.addEventListener(`blur`, () => {
+        if (target.value.length === 0) {
+          target.value = target.placeholder;
+        }
+      }, {once: true});
     });
 
     eventDestination.addEventListener(`input`, (evt) => {

@@ -15,12 +15,12 @@ export default class TripInfoController {
 
   render() {
     const container = this._container;
-    const tripEvents = this._tripEventsModel.getAllEvents();
+    const tripEvents = this._tripEventsModel.getAll();
 
     const oldTripInfoComponent = this._tripInfoComponent;
     this._tripInfoComponent = new TripInfoComponent(tripEvents);
 
-    if (oldTripInfoComponent) {
+    if (oldTripInfoComponent !== null) {
       replace(this._tripInfoComponent, oldTripInfoComponent);
       remove(oldTripInfoComponent);
     } else {
