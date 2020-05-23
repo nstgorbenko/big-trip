@@ -26,6 +26,13 @@ export const FilterType = {
   PAST: `past`
 };
 
+export const HIDDEN_CLASS = `visually-hidden`;
+
+export const MenuItem = {
+  TABLE: `table`,
+  STATS: `stats`
+};
+
 export const Message = {
   NO_EVENTS: `Click New Event to create your first point`,
   LOADING: `Loading...`
@@ -50,3 +57,5 @@ export const SortType = {
   TIME: `sort-time`,
   PRICE: `sort-price`,
 };
+
+export const TRANSFER_EVENTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];

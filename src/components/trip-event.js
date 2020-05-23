@@ -1,7 +1,6 @@
 import AbstractComponent from "./abstract-component.js";
 import {eventTypeToPreposition} from "../dict.js";
-import {formatDateToEventDatetime, formatTime} from "../utils/date/formatters.js";
-import {getDuration} from "../utils/date/duration.js";
+import {formatTime, getDuration} from "../utils/date.js";
 
 const OFFERS_TO_SHOW = 3;
 
@@ -29,13 +28,9 @@ const createTripEventTemplate = (tripEvent) => {
 
   const isOffersType = offers.length > 0;
 
-  const startDatetime = formatDateToEventDatetime(start);
   const startTime = formatTime(start);
-
-  const endDatetime = formatDateToEventDatetime(end);
   const endTime = formatTime(end);
-
-  const duration = getDuration(start, end);
+  const duration = getDuration(end, start);
 
   return (
     `<li class="trip-events__item">
@@ -47,9 +42,9 @@ const createTripEventTemplate = (tripEvent) => {
 
         <div class="event__schedule">
           <p class="event__time">
-            <time class="event__start-time" datetime="${startDatetime}">${startTime}</time>
+            <time class="event__start-time" datetime="${start.toISOString()}">${startTime}</time>
             &mdash;
-            <time class="event__end-time" datetime="${endDatetime}">${endTime}</time>
+            <time class="event__end-time" datetime="${end.toISOString()}">${endTime}</time>
           </p>
           <p class="event__duration">${duration}</p>
         </div>

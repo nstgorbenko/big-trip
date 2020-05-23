@@ -4,8 +4,9 @@ import SortComponent from "../components/sort.js";
 import TripDaysComponent from "../components/trip-days.js";
 import TripEventController from "./trip-event.js";
 import TripMessageComponent from "../components/trip-message.js";
-import {formatDateToDayDatetime} from "../utils/date/formatters.js";
+import {formatDateToDayDatetime} from "../utils/date.js";
 import {getSortedTripEvents} from "../utils/sort.js";
+import {HIDDEN_CLASS} from "../const.js";
 import {ActionType, EmptyEvent, Message, Mode, SortType} from "../const.js";
 import {remove, render} from "../utils/dom.js";
 
@@ -75,10 +76,11 @@ const renderSortedTripEvents = (sortType, container, tripEvents, dispatch) => {
   return renderTripEvents(eventsListComponent.getElement(), getSortedTripEvents(tripEvents, sortType), dispatch);
 };
 
-export default class TripController {
-  constructor(container, tripEventsModel) {
+export default class Trip {
+  constructor(container, tripEventsModel, newEventComponent) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;
+    this._newEventComponent = newEventComponent;
 
     this._showedTripEvents = [];
     this._newEvent = null;
@@ -91,7 +93,7 @@ export default class TripController {
     this._onSortTypeChange = this._onSortTypeChange.bind(this);
     this._onFilterChange = this._onFilterChange.bind(this);
 
-    this._tripEventsModel.setFilterChangeHandler(this._onFilterChange);
+    this._tripEventsModel.addFilterChangeHandler(this._onFilterChange);
   }
 
   render() {
@@ -117,6 +119,14 @@ export default class TripController {
       this._setDefaultViews();
       this._renderNewEvent(this._tripDaysComponent.getElement(), Mode.ADD);
     }
+  }
+
+  hide() {
+    this._container.classList.add(HIDDEN_CLASS);
+  }
+
+  show() {
+    this._container.classList.remove(HIDDEN_CLASS);
   }
 
   _renderFirstBoard(tripEvents) {
@@ -150,7 +160,7 @@ export default class TripController {
   _removeNewEvent() {
     this._newEvent.destroy();
     this._newEvent = null;
-    document.querySelector(`.trip-main__event-add-btn`).disabled = false;
+    this._newEventComponent.setDisabledState(false);
   }
 
   _removeEvents() {

@@ -1,5 +1,5 @@
 import AbstractComponent from "./abstract-component.js";
-import {formatDay} from "../utils/date/formatters.js";
+import {formatDay} from "../utils/date.js";
 
 const createDayTemplate = (day, counter = 0) => {
   const isCertainDay = counter > 0;
