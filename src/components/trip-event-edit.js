@@ -1,7 +1,7 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {createFlatpickr} from "../utils/flatpickr.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
-import {formatDateToEventEdit} from "../utils/date/formatters.js";
+import {formatDateToEventEdit} from "../utils/date.js";
 
 const EmptyDestination = {
   name: ``,

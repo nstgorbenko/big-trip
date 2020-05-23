@@ -3,7 +3,7 @@ import {FilterType} from "../const.js";
 import {render, replace, remove} from "../utils/dom.js";
 import {getEventsByFilter} from "../utils/filter.js";
 
-export default class FilterController {
+export default class Filter {
   constructor(container, tripEventsModel) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;
@@ -13,7 +13,7 @@ export default class FilterController {
     this._onDataChange = this._onDataChange.bind(this);
     this._onFilterChange = this._onFilterChange.bind(this);
 
-    this._tripEventsModel.setDataChangeHandler(this._onDataChange);
+    this._tripEventsModel.addDataChangeHandler(this._onDataChange);
   }
 
   render() {
@@ -44,6 +44,14 @@ export default class FilterController {
   setDefault() {
     this._filterComponent.setDefault();
     this._tripEventsModel.setFilter(FilterType.ALL);
+  }
+
+  hide() {
+    this._filterComponent.hide();
+  }
+
+  show() {
+    this._filterComponent.show();
   }
 
   _onFilterChange(filterType) {

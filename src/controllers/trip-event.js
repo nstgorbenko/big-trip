@@ -6,7 +6,7 @@ import {eventToOffers} from "../mock/offers.js";
 import {isEscKey} from "../utils/common.js";
 import {remove, render, replace} from "../utils/dom.js";
 
-export default class TripEventController {
+export default class TripEvent {
   constructor(container, dispatch) {
     this._container = container;
     this._dispatch = dispatch;

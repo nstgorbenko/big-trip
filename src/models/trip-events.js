@@ -29,7 +29,7 @@ export default class TripEvents {
   }
 
   isEmpty() {
-    return this.getAll().length === 0;
+    return this._tripEvents.length === 0;
   }
 
   add(newEvent) {
@@ -73,11 +73,11 @@ export default class TripEvents {
     return true;
   }
 
-  setFilterChangeHandler(handler) {
+  addFilterChangeHandler(handler) {
     this._filterChangeHandlers.push(handler);
   }
 
-  setDataChangeHandler(handler) {
+  addDataChangeHandler(handler) {
     this._dataChangeHandlers.push(handler);
   }
 

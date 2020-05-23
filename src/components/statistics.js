@@ -1,9 +1,9 @@
-import AbstractSmartComponent from "./abstract-smart-component.js";
+import AbstractComponent from "./abstract-smart-component.js";
 import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {eventTypeToEmoji} from "../dict.js";
-import {HIDDEN_CLASS} from "../const.js";
-import {getDuration} from "../utils/date/duration.js";
+import {HIDDEN_CLASS, TRANSFER_EVENTS} from "../const.js";
+import {getDuration} from "../utils/date.js";
 import moment from "moment";
 
 const BAR_HEIGHT = 55;
@@ -13,15 +13,16 @@ const ChartName = {
   TIME: `TIME SPEND`
 };
 const MIN_CHART_HEIGHT = 110;
-const TRANSPORT = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];
 
-const getChartData = (tripData, chartOptions) => {
+const getEmojiType = (type) => eventTypeToEmoji[type] || ``;
+
+const getChartData = (tripData, callback) => {
   return tripData.reduce((types, tripEvent) => {
-    const tripTypeName = `${eventTypeToEmoji[tripEvent.type]} ${tripEvent.type.toUpperCase()}`;
+    const tripTypeName = `${getEmojiType(tripEvent.type)} ${tripEvent.type.toUpperCase()}`;
     if (!types.hasOwnProperty(tripTypeName)) {
       types[tripTypeName] = 0;
     }
-    types[tripTypeName] += chartOptions(tripEvent);
+    types[tripTypeName] += callback(tripEvent);
 
     return types;
   }, {});
@@ -130,11 +131,10 @@ const createStatisticsTemplate = () => {
   );
 };
 
-export default class Statistics extends AbstractSmartComponent {
-  constructor(tripEventsModel) {
+export default class Statistics extends AbstractComponent {
+  constructor(tripEvents) {
     super();
-
-    this._tripEventsModel = tripEventsModel;
+    this._tripEvents = tripEvents;
 
     this._moneyChart = null;
     this._transportChart = null;
@@ -147,22 +147,10 @@ export default class Statistics extends AbstractSmartComponent {
     return createStatisticsTemplate();
   }
 
-  show() {
-    super.show();
-    this.rerender();
-  }
-
-  rerender() {
-    super.rerender();
-    this._renderCharts();
-  }
-
-  recoveryListeners() {}
-
   _renderCharts() {
     const element = this.getElement();
-    const tripEvents = this._tripEventsModel.getAll();
-    const tripTransportEvents = tripEvents.filter(({type}) => TRANSPORT.indexOf(type) > 0);
+    const tripEvents = this._tripEvents;
+    const tripTransportEvents = tripEvents.filter(({type}) => TRANSFER_EVENTS.indexOf(type) > 0);
 
     const moneyCtx = element.querySelector(`.statistics__chart--money`);
     const transportCtx = element.querySelector(`.statistics__chart--transport`);
@@ -174,9 +162,9 @@ export default class Statistics extends AbstractSmartComponent {
 
     this._resetCharts();
 
-    this._moneyChart = renderChart(moneyCtx, moneyData, ChartName.MONEY, (val) => `€ ${val}`);
-    this._transportChart = renderChart(transportCtx, transportData, ChartName.TRANSPORT, (val) => `${val}x`);
-    this._timeChart = renderChart(timeCtx, timeData, ChartName.TIME, (val) => `${getDuration(val)}`);
+    this._moneyChart = renderChart(moneyCtx, moneyData, ChartName.MONEY, (value) => `€ ${value}`);
+    this._transportChart = renderChart(transportCtx, transportData, ChartName.TRANSPORT, (value) => `${value}x`);
+    this._timeChart = renderChart(timeCtx, timeData, ChartName.TIME, (value) => `${getDuration(value)}`);
   }
 
   _resetChart(chart) {

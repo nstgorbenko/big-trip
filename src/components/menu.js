@@ -17,11 +17,6 @@ export default class Menu extends AbstractComponent {
     return createMenuTemplate();
   }
 
-  setDefault() {
-    const defaultItem = this.getElement().querySelector(`[data-menu-item="${MenuItem.TABLE}"]`);
-    this._setActiveItem(defaultItem);
-  }
-
   setOnChange(handler) {
     this.getElement().addEventListener(`click`, (evt) => {
       evt.preventDefault();
