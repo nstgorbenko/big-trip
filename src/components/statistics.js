@@ -3,7 +3,7 @@ import Chart from "chart.js";
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {eventTypeToEmoji} from "../dict.js";
 import {HIDDEN_CLASS, TRANSFER_EVENTS} from "../const.js";
-import {getDuration} from "../utils/date.js";
+import {formatDuration} from "../utils/date.js";
 import moment from "moment";
 
 const BAR_HEIGHT = 55;
@@ -164,7 +164,7 @@ export default class Statistics extends AbstractComponent {
 
     this._moneyChart = renderChart(moneyCtx, moneyData, ChartName.MONEY, (value) => `€ ${value}`);
     this._transportChart = renderChart(transportCtx, transportData, ChartName.TRANSPORT, (value) => `${value}x`);
-    this._timeChart = renderChart(timeCtx, timeData, ChartName.TIME, (value) => `${getDuration(value)}`);
+    this._timeChart = renderChart(timeCtx, timeData, ChartName.TIME, (value) => `${formatDuration(value)}`);
   }
 
   _resetChart(chart) {

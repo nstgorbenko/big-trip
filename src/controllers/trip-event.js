@@ -1,31 +1,34 @@
+import TripEventModel from "../models/trip-event.js";
 import TripEventComponent from "../components/trip-event.js";
 import TripEventEditComponent from "../components/trip-event-edit.js";
 import {ActionType, Mode, RenderPosition} from "../const.js";
-import {destinations} from "../mock/destination.js";
-import {eventToOffers} from "../mock/offers.js";
 import {isEscKey} from "../utils/common.js";
 import {remove, render, replace} from "../utils/dom.js";
 
 export default class TripEvent {
-  constructor(container, dispatch) {
+  constructor(container, destinationsModel, offersModel, dispatch) {
     this._container = container;
+    this._destinationsModel = destinationsModel;
+    this._offersModel = offersModel;
     this._dispatch = dispatch;
 
     this._mode = Mode.DEFAULT;
     this._tripEventComponent = null;
     this._tripEventEditComponent = null;
 
-    this._onEscKeyDown = this._onEscKeyDown.bind(this);
+    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
   render(tripEvent, mode = Mode.DEFAULT) {
+    const destinations = this._destinationsModel.get();
+    const offers = this._offersModel.get();
     this._mode = mode;
 
     const oldTripEventComponent = this._tripEventComponent;
     const oldTripEventEditComponent = this._tripEventEditComponent;
 
     this._tripEventComponent = new TripEventComponent(tripEvent);
-    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, eventToOffers);
+    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, offers);
 
     this._subscribeOnEvents(tripEvent);
 
@@ -42,11 +45,11 @@ export default class TripEvent {
         this._replaceOldEventComponents(oldTripEventComponent, oldTripEventEditComponent);
         break;
       case Mode.FIRST:
-        document.addEventListener(`keydown`, this._onEscKeyDown);
+        document.addEventListener(`keydown`, this._escKeyDownHandler);
         render(this._container, this._tripEventEditComponent);
         break;
       case Mode.ADD:
-        document.addEventListener(`keydown`, this._onEscKeyDown);
+        document.addEventListener(`keydown`, this._escKeyDownHandler);
         render(this._container, this._tripEventEditComponent, RenderPosition.BEFOREBEGIN);
         break;
     }
@@ -55,7 +58,7 @@ export default class TripEvent {
   destroy() {
     remove(this._tripEventComponent);
     remove(this._tripEventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
   setDefaultView() {
@@ -70,13 +73,13 @@ export default class TripEvent {
     });
     this._tripEventEditComponent.reset();
     replace(this._tripEventEditComponent, this._tripEventComponent);
-    document.addEventListener(`keydown`, this._onEscKeyDown);
+    document.addEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.EDIT;
   }
 
   _replaceEditToDefault() {
     replace(this._tripEventComponent, this._tripEventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
   }
 
@@ -97,13 +100,36 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setSubmitHandler(() => {
-      const data = this._tripEventEditComponent.getData();
+      const formData = this._tripEventEditComponent.getData();
+      const destinations = this._destinationsModel.get();
+
+      const destinationName = formData.get(`event-destination`);
+      const destination = destinations.find(({name}) => name === destinationName);
+
+      const offerInputs = Array.from(this._tripEventEditComponent.getElement().querySelectorAll(`.event__offer-checkbox:checked`));
+      const checkedOffers = offerInputs.map(({name, value}) => {
+        const offerTitle = name[0].toUpperCase() + name.slice(1);
+        return {title: offerTitle, price: +value};
+      });
+
+      const newData = {
+        "id": this._tripEventEditComponent._tripEvent.id,
+        "type": formData.get(`event-type`),
+        "destination": destination.convertToRaw(),
+        "date_from": formData.get(`event-start-time`),
+        "date_to": formData.get(`event-end-time`),
+        "base_price": +formData.get(`event-price`),
+        "offers": checkedOffers,
+        "is_favorite": formData.has(`event-favorite`),
+      };
+
+      const newTripEvent = TripEventModel.parse(newData);
       this._dispatch({
         type: ActionType.UPDATE,
         payload: {
           id: tripEvent.id,
           controller: this,
-          newData: data
+          newData: newTripEvent
         }});
     });
 
@@ -135,7 +161,7 @@ export default class TripEvent {
     });
   }
 
-  _onEscKeyDown(evt) {
+  _escKeyDownHandler(evt) {
     if (isEscKey(evt)) {
       if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
         this._dispatch({

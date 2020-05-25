@@ -1,13 +1,8 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {createFlatpickr} from "../utils/flatpickr.js";
+import {EMPTY_EVENT} from "../const.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date.js";
-
-const EmptyDestination = {
-  name: ``,
-  description: ``,
-  photos: [],
-};
 
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
@@ -82,6 +77,7 @@ const createPhotosMarkup = (photos) => {
 };
 
 const getTypeWithPreposition = (type) => eventTypeToPreposition.get(type) || ``;
+const getTripEventOffers = (type, allOffers) => allOffers[type] || [];
 
 const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options = {}) => {
   const {id, basePrice, isFavorite} = tripEvent;
@@ -99,7 +95,7 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
   const description = destination.description;
   const photos = destination.photos;
 
-  const allTripEventOffers = allOffers[type];
+  const allTripEventOffers = getTripEventOffers(type, allOffers);
   const isOffersType = allTripEventOffers.length > 0;
   const isInfo = description.length > 0 || photos.length > 0;
   const isEventDetails = isOffersType || isInfo;
@@ -195,7 +191,7 @@ const createTripEventEditTemplate = (tripEvent, destinations, allOffers, options
 };
 
 export default class TripEventEdit extends AbstractSmartComponent {
-  constructor(tripEvent, destinations, allOffers) {
+  constructor(tripEvent = EMPTY_EVENT, destinations = [], allOffers = []) {
     super();
 
     this._tripEvent = tripEvent;
@@ -231,29 +227,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
 
   getData() {
     const form = this.getElement();
-    const formData = new FormData(form);
-
-    const type = formData.get(`event-type`);
-
-    const destinationName = formData.get(`event-destination`);
-    const destination = this._destinations.find(({name}) => name === destinationName) || EmptyDestination;
-
-    const offerInputs = Array.from(this.getElement().querySelectorAll(`.event__offer-checkbox:checked`));
-    const offers = offerInputs.map(({name, value}) => {
-      const offerTitle = name[0].toUpperCase() + name.slice(1);
-      return {title: offerTitle, price: +value};
-    });
-
-    return {
-      id: this._tripEvent.id,
-      type,
-      destination,
-      start: new Date(formData.get(`event-start-time`)),
-      end: new Date(formData.get(`event-end-time`)),
-      basePrice: +formData.get(`event-price`),
-      offers,
-      isFavorite: formData.has(`event-favorite`),
-    };
+    return new FormData(form);
   }
 
   setFavoriteButtonClickHandler(handler) {
@@ -266,7 +240,10 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   setSubmitHandler(handler) {
-    this.getElement().addEventListener(`submit`, handler);
+    this.getElement().addEventListener(`submit`, (evt) => {
+      evt.preventDefault();
+      handler();
+    });
     this._submitHandler = handler;
   }
 

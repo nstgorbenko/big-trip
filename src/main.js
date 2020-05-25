@@ -1,37 +1,34 @@
+import API from "./api.js";
+import DestinationsModel from "./models/destinations.js";
 import FilterController from "./controllers/filter.js";
 import MenuComponent from "./components/menu.js";
 import NewEventComponent from "./components/new-event.js";
+import OffersModel from "./models/offers.js";
 import StatisticsController from "./controllers/statistics.js";
 import TripController from "./controllers/trip.js";
 import TripEventsModel from "./models/trip-events.js";
 import TripInfoController from "./controllers/trip-info.js";
-import {generateEvents} from "./mock/event.js";
 import {render} from "./utils/dom.js";
 import {MenuItem, RenderPosition} from "./const.js";
-
-const EVENT_COUNT = 20;
-const tripEvents = generateEvents(EVENT_COUNT);
-
-const tripEventsModel = new TripEventsModel();
-tripEventsModel.set(tripEvents);
 
 const tripBoard = document.querySelector(`.trip-events`);
 const tripMain = document.querySelector(`.trip-main`);
 const tripControls = tripMain.querySelector(`.trip-controls`);
 const tripViewHeading = tripControls.querySelector(`h2`);
 
+const bigTripApi = new API();
+
+const tripEventsModel = new TripEventsModel();
+const destinationsModel = new DestinationsModel();
+const offersModel = new OffersModel();
+
 const menuComponent = new MenuComponent();
 const newEventComponent = new NewEventComponent();
+
 const statisticsController = new StatisticsController(tripBoard, tripEventsModel);
 const tripInfoController = new TripInfoController(tripMain, tripEventsModel);
 const filterController = new FilterController(tripControls, tripEventsModel);
-const tripController = new TripController(tripBoard, tripEventsModel, newEventComponent);
-
-tripInfoController.render();
-render(tripViewHeading, menuComponent, RenderPosition.AFTEREND);
-filterController.render();
-render(tripMain, newEventComponent);
-tripController.render();
+const tripController = new TripController(tripBoard, tripEventsModel, destinationsModel, offersModel, bigTripApi, newEventComponent);
 
 const showTable = () => {
   statisticsController.hide();
@@ -47,15 +44,18 @@ const showStats = () => {
   tripController.hide();
 };
 
-const onNewEventClick = () => {
-  newEventComponent.setDisabledState(true);
-  filterController.setDefault();
+const newEventClickHandler = () => {
+  newEventComponent.setDisabled(true);
   tripController.createEvent();
+  filterController.setDefault();
 };
 
-newEventComponent.setClickHandler(onNewEventClick);
+render(tripMain, newEventComponent);
+render(tripViewHeading, menuComponent, RenderPosition.AFTEREND);
 
-menuComponent.setOnChange((menuItem) => {
+tripController.showLoadingMessage();
+newEventComponent.setClickHandler(newEventClickHandler);
+menuComponent.setChangeHandler((menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
       showTable();
@@ -65,3 +65,18 @@ menuComponent.setOnChange((menuItem) => {
       break;
   }
 });
+
+bigTripApi.getAllData()
+  .then((tripData) => {
+    tripEventsModel.set(tripData.tripEvents);
+    destinationsModel.set(tripData.destinations);
+    offersModel.set(tripData.offers);
+  })
+  .then(() => {
+    tripInfoController.render();
+    filterController.render();
+    tripController.render();
+  })
+  .catch((error) => {
+    throw error;
+  });

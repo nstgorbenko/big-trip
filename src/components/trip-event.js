@@ -1,6 +1,7 @@
 import AbstractComponent from "./abstract-component.js";
+import {EMPTY_EVENT} from "../const.js";
 import {eventTypeToPreposition} from "../dict.js";
-import {formatTime, getDuration} from "../utils/date.js";
+import {formatTime, formatDuration} from "../utils/date.js";
 
 const OFFERS_TO_SHOW = 3;
 
@@ -30,7 +31,7 @@ const createTripEventTemplate = (tripEvent) => {
 
   const startTime = formatTime(start);
   const endTime = formatTime(end);
-  const duration = getDuration(end, start);
+  const duration = formatDuration(end, start);
 
   return (
     `<li class="trip-events__item">
@@ -68,7 +69,7 @@ const createTripEventTemplate = (tripEvent) => {
 };
 
 export default class TripEvent extends AbstractComponent {
-  constructor(tripEvent) {
+  constructor(tripEvent = EMPTY_EVENT) {
     super();
 
     this._tripEvent = tripEvent;

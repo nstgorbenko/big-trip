@@ -22,7 +22,7 @@ export default class AbstractComponent {
   }
 
   hide() {
-    this._element.classList.add(HIDDEN_CLASS);
+    this.getElement().classList.add(HIDDEN_CLASS);
   }
 
   removeElement() {
@@ -30,6 +30,6 @@ export default class AbstractComponent {
   }
 
   show() {
-    this._element.classList.remove(HIDDEN_CLASS);
+    this.getElement().classList.remove(HIDDEN_CLASS);
   }
 }

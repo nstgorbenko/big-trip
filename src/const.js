@@ -6,7 +6,7 @@ export const ActionType = {
   UPDATE: `UPDATE`,
 };
 
-export const EmptyEvent = {
+export const EMPTY_EVENT = {
   type: `bus`,
   destination: {
     name: ``,

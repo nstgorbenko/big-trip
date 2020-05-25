@@ -9,8 +9,8 @@ export default class TripInfo {
 
     this._tripInfoComponent = null;
 
-    this._onDataChange = this._onDataChange.bind(this);
-    this._tripEventsModel.addDataChangeHandler(this._onDataChange);
+    this._dataChangeHandler = this._dataChangeHandler.bind(this);
+    this._tripEventsModel.addDataChangeHandler(this._dataChangeHandler);
   }
 
   render() {
@@ -28,7 +28,7 @@ export default class TripInfo {
     }
   }
 
-  _onDataChange() {
+  _dataChangeHandler() {
     this.render();
   }
 }

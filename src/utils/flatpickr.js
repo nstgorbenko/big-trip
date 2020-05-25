@@ -1,7 +1,7 @@
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 
-const defaultConfig = {
+const defaultConfiguration = {
   'altInput': true,
   'altFormat': `d/m/y H:i`,
   'dateFormat': `Z`,
@@ -10,4 +10,4 @@ const defaultConfig = {
 };
 
 export const createFlatpickr = (element, options = {}) =>
-  flatpickr(element, Object.assign({}, defaultConfig, options));
+  flatpickr(element, Object.assign({}, defaultConfiguration, options));

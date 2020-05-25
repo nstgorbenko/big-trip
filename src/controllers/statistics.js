@@ -10,8 +10,8 @@ export default class Statistics {
     this._shouldChartUpdate = true;
     this._statisticsComponent = null;
 
-    this._onDataChange = this._onDataChange.bind(this);
-    this._tripEventsModel.addDataChangeHandler(this._onDataChange);
+    this._dataChangeHandler = this._dataChangeHandler.bind(this);
+    this._tripEventsModel.addDataChangeHandler(this._dataChangeHandler);
   }
 
   show() {
@@ -42,7 +42,7 @@ export default class Statistics {
     }
   }
 
-  _onDataChange() {
+  _dataChangeHandler() {
     this._shouldChartUpdate = true;
   }
 }
