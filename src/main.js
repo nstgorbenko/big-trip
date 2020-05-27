@@ -11,12 +11,15 @@ import TripInfoController from "./controllers/trip-info.js";
 import {render} from "./utils/dom.js";
 import {MenuItem, RenderPosition} from "./const.js";
 
+const AUTHORIZATION = `Basic jzkskbfjkse6788gisnfkj=`;
+const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
+
 const tripBoard = document.querySelector(`.trip-events`);
 const tripMain = document.querySelector(`.trip-main`);
 const tripControls = tripMain.querySelector(`.trip-controls`);
 const tripViewHeading = tripControls.querySelector(`h2`);
 
-const bigTripApi = new API();
+const api = new API(END_POINT, AUTHORIZATION);
 
 const tripEventsModel = new TripEventsModel();
 const destinationsModel = new DestinationsModel();
@@ -28,7 +31,7 @@ const newEventComponent = new NewEventComponent();
 const statisticsController = new StatisticsController(tripBoard, tripEventsModel);
 const tripInfoController = new TripInfoController(tripMain, tripEventsModel);
 const filterController = new FilterController(tripControls, tripEventsModel);
-const tripController = new TripController(tripBoard, tripEventsModel, destinationsModel, offersModel, bigTripApi, newEventComponent);
+const tripController = new TripController(tripBoard, tripEventsModel, destinationsModel, offersModel, api, newEventComponent);
 
 const showTable = () => {
   statisticsController.hide();
@@ -50,10 +53,15 @@ const newEventClickHandler = () => {
   filterController.setDefault();
 };
 
+const blockUI = () => {
+  tripController.showErrorMessage();
+  newEventComponent.hide();
+  menuComponent.hide();
+};
+
 render(tripMain, newEventComponent);
 render(tripViewHeading, menuComponent, RenderPosition.AFTEREND);
 
-tripController.showLoadingMessage();
 newEventComponent.setClickHandler(newEventClickHandler);
 menuComponent.setChangeHandler((menuItem) => {
   switch (menuItem) {
@@ -66,17 +74,18 @@ menuComponent.setChangeHandler((menuItem) => {
   }
 });
 
-bigTripApi.getAllData()
+tripController.showLoadingMessage();
+api.getAllData()
   .then((tripData) => {
     tripEventsModel.set(tripData.tripEvents);
     destinationsModel.set(tripData.destinations);
     offersModel.set(tripData.offers);
-  })
-  .then(() => {
+
     tripInfoController.render();
     filterController.render();
     tripController.render();
   })
   .catch((error) => {
+    blockUI();
     throw error;
   });

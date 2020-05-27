@@ -7,7 +7,8 @@ import TripMessageComponent from "../components/trip-message.js";
 import {formatDateToDayDatetime} from "../utils/date.js";
 import {getSortedTripEvents} from "../utils/sort.js";
 import {HIDDEN_CLASS} from "../const.js";
-import {ActionType, EMPTY_EVENT, Message, Mode, SortType} from "../const.js";
+import {ActionType, Message, Mode, SortType} from "../const.js";
+import {createNewEvent} from "../utils/common.js";
 import {remove, render} from "../utils/dom.js";
 
 const groupEventsByDays = (someEvents) => {
@@ -21,59 +22,6 @@ const groupEventsByDays = (someEvents) => {
 
     return days;
   }, {});
-};
-
-const renderTripEvents = (container, tripEvents, destinationsModel, offersModel, dispatch) => {
-  return tripEvents.map((tripEvent) => {
-    const tripEventController = new TripEventController(container, destinationsModel, offersModel, dispatch);
-    tripEventController.render(tripEvent);
-
-    return tripEventController;
-  });
-};
-
-const renderGroupedEvents = (container, groupedEvents, destinationsModel, offersModel, dispatch) => {
-  const days = Object.keys(groupedEvents);
-  const eventControllers = [];
-
-  for (let i = 0; i < days.length; i++) {
-    const day = days[i];
-    const dayCounter = i + 1;
-    const dayComponent = new DayComponent(day, dayCounter);
-    const eventsListComponent = new EventsListComponent();
-
-    for (const tripEvent of groupedEvents[day]) {
-      const tripEventController = new TripEventController(eventsListComponent.getElement(), destinationsModel, offersModel, dispatch);
-      tripEventController.render(tripEvent);
-      eventControllers.push(tripEventController);
-    }
-
-    render(dayComponent.getElement(), eventsListComponent);
-    render(container, dayComponent);
-  }
-
-  return eventControllers;
-};
-
-const renderAllEvents = (container, allEvents, destinationsModel, offersModel, dispatch) => {
-  const eventsByDays = groupEventsByDays(allEvents);
-  return renderGroupedEvents(container, eventsByDays, destinationsModel, offersModel, dispatch);
-};
-
-const renderSortedTripEvents = (sortType, container, tripEvents, destinationsModel, offersModel, dispatch) => {
-  const sortedTripEvents = getSortedTripEvents(tripEvents, sortType);
-
-  if (sortType === SortType.DEFAULT) {
-    return renderAllEvents(container, sortedTripEvents, destinationsModel, offersModel, dispatch);
-  }
-
-  const dayComponent = new DayComponent();
-  const eventsListComponent = new EventsListComponent();
-
-  render(container, dayComponent);
-  render(dayComponent.getElement(), eventsListComponent);
-
-  return renderTripEvents(eventsListComponent.getElement(), sortedTripEvents, destinationsModel, offersModel, dispatch);
 };
 
 export default class Trip {
@@ -101,7 +49,6 @@ export default class Trip {
 
   render() {
     const tripEvents = this._tripEventsModel.getAll();
-    remove(this._tripMessageComponent);
 
     if (this._tripEventsModel.isEmpty()) {
       this._renderTripMessage(Message.NO_EVENTS);
@@ -117,7 +64,7 @@ export default class Trip {
     }
 
     if (this._tripEventsModel.isEmpty()) {
-      remove(this._tripMessageComponent);
+      this._removeTripMessage();
       this._renderNewEvent(this._container, Mode.FIRST);
     } else {
       this._setDefaultViews();
@@ -137,7 +84,13 @@ export default class Trip {
     this._renderTripMessage(Message.LOADING);
   }
 
+  showErrorMessage() {
+    this._renderTripMessage(Message.ERROR);
+  }
+
   _renderFirstBoard(tripEvents) {
+    this._removeTripMessage();
+
     this._sortComponent = new SortComponent();
     this._sortComponent.setChangeHandler(this._sortTypeChangeHandler);
 
@@ -145,17 +98,24 @@ export default class Trip {
     render(this._container, this._tripDaysComponent);
 
     const tripDays = this._tripDaysComponent.getElement();
-    this._showedTripEvents = renderSortedTripEvents(SortType.DEFAULT, tripDays, tripEvents, this._destinationsModel, this._offersModel, this._dispatch);
+    this._showedTripEvents = this._renderSortedTripEvents(SortType.DEFAULT, tripDays, tripEvents);
   }
 
   _renderNewEvent(container, mode) {
     this._newEvent = new TripEventController(container, this._destinationsModel, this._offersModel, this._dispatch);
-    this._newEvent.render(EMPTY_EVENT, mode);
+    this._newEvent.render(createNewEvent(), mode);
   }
 
   _renderTripMessage(message) {
+    this._removeTripMessage();
     this._tripMessageComponent = new TripMessageComponent(message);
     render(this._container, this._tripMessageComponent);
+  }
+
+  _removeTripMessage() {
+    if (this._tripMessageComponent !== null) {
+      remove(this._tripMessageComponent);
+    }
   }
 
   _removeFirstBoard() {
@@ -184,13 +144,66 @@ export default class Trip {
     const tripDays = this._tripDaysComponent.getElement();
     const tripEvents = this._tripEventsModel.get();
     let newSortType = SortType.DEFAULT;
-    if (!this._newEvent) {
+    if (this._newEvent === null) {
       newSortType = sortType || this._sortComponent.getActiveType();
     }
 
     this._removeEvents();
     this._tripDaysComponent.clear();
-    this._showedTripEvents = renderSortedTripEvents(newSortType, tripDays, tripEvents, this._destinationsModel, this._offersModel, this._dispatch);
+    this._showedTripEvents = this._renderSortedTripEvents(newSortType, tripDays, tripEvents);
+  }
+
+  _renderTripEvents(container, tripEvents) {
+    return tripEvents.map((tripEvent) => {
+      const tripEventController = new TripEventController(container, this._destinationsModel, this._offersModel, this._dispatch);
+      tripEventController.render(tripEvent);
+
+      return tripEventController;
+    });
+  }
+
+  _renderGroupedEvents(container, groupedEvents) {
+    const days = Object.keys(groupedEvents);
+    const eventControllers = [];
+
+    for (let i = 0; i < days.length; i++) {
+      const day = days[i];
+      const dayCounter = i + 1;
+      const dayComponent = new DayComponent(day, dayCounter);
+      const eventsListComponent = new EventsListComponent();
+
+      for (const tripEvent of groupedEvents[day]) {
+        const tripEventController = new TripEventController(eventsListComponent.getElement(), this._destinationsModel, this._offersModel, this._dispatch);
+        tripEventController.render(tripEvent);
+        eventControllers.push(tripEventController);
+      }
+
+      render(dayComponent.getElement(), eventsListComponent);
+      render(container, dayComponent);
+    }
+
+    return eventControllers;
+  }
+
+  _renderAllEvents(container, allEvents) {
+    const eventsByDays = groupEventsByDays(allEvents);
+    return this._renderGroupedEvents(container, eventsByDays);
+  }
+
+  _renderSortedTripEvents(sortType, container, tripEvents) {
+    const sortedTripEvents = getSortedTripEvents(tripEvents, sortType);
+
+    if (sortType === SortType.DEFAULT) {
+      return this._renderAllEvents(container, sortedTripEvents);
+    }
+
+    const dayComponent = new DayComponent();
+    const eventsListComponent = new EventsListComponent();
+
+    render(container, dayComponent);
+    render(dayComponent.getElement(), eventsListComponent);
+
+    return this._renderTripEvents(eventsListComponent.getElement(), sortedTripEvents);
   }
 
   _handleAddToFavoriteAction({payload}) {
@@ -199,8 +212,11 @@ export default class Trip {
   }
 
   _handleDeleteAction({payload}) {
-    this._tripEventsModel.deleteEvent(payload.id);
+    const isSuccess = this._tripEventsModel.deleteEvent(payload.id);
 
+    if (!isSuccess) {
+      return;
+    }
     if (this._tripEventsModel.isEmpty()) {
       this._removeFirstBoard();
       return;
@@ -218,21 +234,22 @@ export default class Trip {
 
   _handleToEditAction() {
     this._setDefaultViews();
-    if (this._newEvent) {
+    if (this._newEvent !== null) {
       this._removeNewEvent();
     }
   }
 
   _handleUpdateAction({payload}) {
-    if (payload.id) {
-      this._api.updateTripEvent(payload.id, payload.newData)
-        .then((tripEvent) => {
-          this._tripEventsModel.update(payload.id, tripEvent);
+    this._api.updateTripEvent(payload.id, payload.newData)
+      .then((tripEvent) => {
+        const isSuccess = this._tripEventsModel.update(payload.id, tripEvent);
+        if (isSuccess) {
           this._updateEvents();
-        });
-      return;
-    }
+        }
+      });
+  }
 
+  _handleAddNewEventAction({payload}) {
     this._tripEventsModel.add(payload.newData);
     this._removeNewEvent();
 
@@ -251,6 +268,9 @@ export default class Trip {
         break;
       case ActionType.DELETE:
         this._handleDeleteAction(action);
+        break;
+      case ActionType.NEW_EVENT:
+        this._handleAddNewEventAction(action);
         break;
       case ActionType.REMOVE_NEW_EVENT:
         this._handleRemoveNewEventAction();

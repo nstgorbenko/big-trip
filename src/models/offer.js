@@ -1,6 +1,7 @@
 export default class Offer {
   constructor(offer) {
-    this[offer[`type`]] = offer[`offers`];
+    this.type = offer[`type`];
+    this.offers = offer[`offers`];
   }
 
   static parse(offer) {

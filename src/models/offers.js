@@ -5,11 +5,10 @@ export default class Offers {
 
   set(offers) {
     const offersData = Array.from(offers).reduce((resultOffers, offer) => {
-      const offerKey = Object.keys(offer)[0];
-      resultOffers[offerKey] = offer[offerKey];
-
+      resultOffers[offer.type] = offer.offers;
       return resultOffers;
     }, {});
+
     this._offers = offersData;
   }
 

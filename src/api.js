@@ -9,29 +9,33 @@ const Method = {
   DELETE: `DELETE`
 };
 
+const Url = {
+  TRIP_EVENTS: `points`,
+  DESTINATIONS: `destinations`,
+  OFFERS: `offers`
+};
+
 const checkStatus = (response) => {
   if (response.status >= 200 && response.status < 300) {
-    return response.json();
-  } else {
-    return [];
+    return response;
   }
+  throw new Error(`${response.status}: ${response.statusText}`);
 };
 
 export default class API {
+  constructor(endPoint, authorization) {
+    this._endPoint = endPoint;
+    this._authorization = authorization;
+  }
+
   getAllData() {
     return Promise.all([this._getTripEvents(), this._getDestinations(), this._getOffers()])
-      .then(([tripEvents, destinations, offers]) => {
-        return {
-          tripEvents,
-          destinations,
-          offers
-        };
-      });
+      .then(([tripEvents, destinations, offers]) => ({tripEvents, destinations, offers}));
   }
 
   updateTripEvent(id, newData) {
     return this._load({
-      url: `points/${id}`,
+      url: `${Url.TRIP_EVENTS}/${id}`,
       method: Method.PUT,
       body: JSON.stringify(newData.convertToRaw()),
       headers: new Headers({"Content-Type": `application/json`})
@@ -40,25 +44,26 @@ export default class API {
   }
 
   _getTripEvents() {
-    return this._load({url: `points`})
+    return this._load({url: Url.TRIP_EVENTS})
       .then(TripEvent.parseAll);
   }
 
   _getDestinations() {
-    return this._load({url: `destinations`})
+    return this._load({url: Url.DESTINATIONS})
     .then(Destination.parseAll);
   }
 
   _getOffers() {
-    return this._load({url: `offers`})
+    return this._load({url: Url.OFFERS})
     .then(Offer.parseAll);
   }
 
   _load({url, method = Method.GET, body = null, headers = new Headers()}) {
-    headers.append(`Authorization`, `Basic jzkskbfjkse6788gisnfkj=`);
+    headers.append(`Authorization`, this._authorization);
 
-    return fetch(`https://11.ecmascript.pages.academy/big-trip/${url}`, {method, body, headers})
+    return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
+      .then((response) => response.json())
       .catch((error) => {
         throw error;
       });

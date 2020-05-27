@@ -20,15 +20,13 @@ export default class TripEvent {
   }
 
   render(tripEvent, mode = Mode.DEFAULT) {
-    const destinations = this._destinationsModel.get();
-    const offers = this._offersModel.get();
     this._mode = mode;
 
     const oldTripEventComponent = this._tripEventComponent;
     const oldTripEventEditComponent = this._tripEventEditComponent;
 
     this._tripEventComponent = new TripEventComponent(tripEvent);
-    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, offers);
+    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, this._destinationsModel, this._offersModel);
 
     this._subscribeOnEvents(tripEvent);
 
@@ -101,31 +99,10 @@ export default class TripEvent {
 
     this._tripEventEditComponent.setSubmitHandler(() => {
       const formData = this._tripEventEditComponent.getData();
-      const destinations = this._destinationsModel.get();
+      const newTripEvent = TripEventModel.parse(formData);
 
-      const destinationName = formData.get(`event-destination`);
-      const destination = destinations.find(({name}) => name === destinationName);
-
-      const offerInputs = Array.from(this._tripEventEditComponent.getElement().querySelectorAll(`.event__offer-checkbox:checked`));
-      const checkedOffers = offerInputs.map(({name, value}) => {
-        const offerTitle = name[0].toUpperCase() + name.slice(1);
-        return {title: offerTitle, price: +value};
-      });
-
-      const newData = {
-        "id": this._tripEventEditComponent._tripEvent.id,
-        "type": formData.get(`event-type`),
-        "destination": destination.convertToRaw(),
-        "date_from": formData.get(`event-start-time`),
-        "date_to": formData.get(`event-end-time`),
-        "base_price": +formData.get(`event-price`),
-        "offers": checkedOffers,
-        "is_favorite": formData.has(`event-favorite`),
-      };
-
-      const newTripEvent = TripEventModel.parse(newData);
       this._dispatch({
-        type: ActionType.UPDATE,
+        type: this._mode === Mode.EDIT ? ActionType.UPDATE : ActionType.ADD_NEW_EVENT,
         payload: {
           id: tripEvent.id,
           controller: this,
@@ -146,18 +123,12 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
-      if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
-        this._dispatch({
-          type: ActionType.REMOVE_NEW_EVENT,
-        });
-      } else {
-        this._dispatch({
-          type: ActionType.DELETE,
-          payload: {
-            id: tripEvent.id
-          }
-        });
-      }
+      this._dispatch({
+        type: this._mode === Mode.EDIT ? ActionType.DELETE : ActionType.REMOVE_NEW_EVENT,
+        payload: {
+          id: tripEvent.id
+        }
+      });
     });
   }
 

@@ -1,8 +1,9 @@
 const renameObjectProperty = (object, previousKey, requiredKey) => {
-  object[requiredKey] = object[previousKey];
-  delete object[previousKey];
+  const correctObject = Object.assign({}, object);
+  correctObject[requiredKey] = object[previousKey];
+  delete correctObject[previousKey];
 
-  return object;
+  return correctObject;
 };
 
 export default class TripEvent {
