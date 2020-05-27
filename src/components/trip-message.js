@@ -8,7 +8,7 @@ const createTripMessageTemplate = (message) => {
 
 
 export default class TripMessage extends AbstractComponent {
-  constructor(message) {
+  constructor(message = ``) {
     super();
 
     this._message = message;

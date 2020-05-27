@@ -1,23 +1,10 @@
 export const ActionType = {
   ADD_TO_FAVORITE: `ADD_TO_FAVORITE`,
   DELETE: `DELETE`,
+  ADD_NEW_EVENT: `NEW_EVENT`,
   REMOVE_NEW_EVENT: `REMOVE_NEW_EVENT`,
   TO_EDIT: `TO_EDIT`,
   UPDATE: `UPDATE`,
-};
-
-export const EmptyEvent = {
-  type: `bus`,
-  destination: {
-    name: ``,
-    description: ``,
-    photos: [],
-  },
-  start: new Date(),
-  end: new Date(),
-  basePrice: ``,
-  offers: [],
-  isFavorite: false,
 };
 
 export const FilterType = {
@@ -35,7 +22,8 @@ export const MenuItem = {
 
 export const Message = {
   NO_EVENTS: `Click New Event to create your first point`,
-  LOADING: `Loading...`
+  LOADING: `Loading...`,
+  ERROR: `Something went wrong. Please try again later.`
 };
 
 export const Mode = {

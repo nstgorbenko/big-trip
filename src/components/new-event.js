@@ -11,7 +11,7 @@ export default class NewEvent extends AbstractComponent {
     return createNewEventTemplate();
   }
 
-  setDisabledState(value) {
+  setDisabled(value) {
     this.getElement().disabled = value;
   }
 

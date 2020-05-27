@@ -56,7 +56,7 @@ export default class Sort extends AbstractComponent {
     this.getElement().querySelector(`#${SortType.DEFAULT}`).checked = true;
   }
 
-  setSortTypeChangeHandler(handler) {
+  setChangeHandler(handler) {
     this.getElement().addEventListener(`change`, (evt) => {
       const sortType = evt.target.value;
 

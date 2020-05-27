@@ -1,21 +1,22 @@
+import TripEventModel from "../models/trip-event.js";
 import TripEventComponent from "../components/trip-event.js";
 import TripEventEditComponent from "../components/trip-event-edit.js";
 import {ActionType, Mode, RenderPosition} from "../const.js";
-import {destinations} from "../mock/destination.js";
-import {eventToOffers} from "../mock/offers.js";
 import {isEscKey} from "../utils/common.js";
 import {remove, render, replace} from "../utils/dom.js";
 
 export default class TripEvent {
-  constructor(container, dispatch) {
+  constructor(container, destinationsModel, offersModel, dispatch) {
     this._container = container;
+    this._destinationsModel = destinationsModel;
+    this._offersModel = offersModel;
     this._dispatch = dispatch;
 
     this._mode = Mode.DEFAULT;
     this._tripEventComponent = null;
     this._tripEventEditComponent = null;
 
-    this._onEscKeyDown = this._onEscKeyDown.bind(this);
+    this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
   }
 
   render(tripEvent, mode = Mode.DEFAULT) {
@@ -25,7 +26,7 @@ export default class TripEvent {
     const oldTripEventEditComponent = this._tripEventEditComponent;
 
     this._tripEventComponent = new TripEventComponent(tripEvent);
-    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, destinations, eventToOffers);
+    this._tripEventEditComponent = new TripEventEditComponent(tripEvent, this._destinationsModel, this._offersModel);
 
     this._subscribeOnEvents(tripEvent);
 
@@ -42,11 +43,11 @@ export default class TripEvent {
         this._replaceOldEventComponents(oldTripEventComponent, oldTripEventEditComponent);
         break;
       case Mode.FIRST:
-        document.addEventListener(`keydown`, this._onEscKeyDown);
+        document.addEventListener(`keydown`, this._escKeyDownHandler);
         render(this._container, this._tripEventEditComponent);
         break;
       case Mode.ADD:
-        document.addEventListener(`keydown`, this._onEscKeyDown);
+        document.addEventListener(`keydown`, this._escKeyDownHandler);
         render(this._container, this._tripEventEditComponent, RenderPosition.BEFOREBEGIN);
         break;
     }
@@ -55,7 +56,7 @@ export default class TripEvent {
   destroy() {
     remove(this._tripEventComponent);
     remove(this._tripEventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
   setDefaultView() {
@@ -70,13 +71,13 @@ export default class TripEvent {
     });
     this._tripEventEditComponent.reset();
     replace(this._tripEventEditComponent, this._tripEventComponent);
-    document.addEventListener(`keydown`, this._onEscKeyDown);
+    document.addEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.EDIT;
   }
 
   _replaceEditToDefault() {
     replace(this._tripEventComponent, this._tripEventEditComponent);
-    document.removeEventListener(`keydown`, this._onEscKeyDown);
+    document.removeEventListener(`keydown`, this._escKeyDownHandler);
     this._mode = Mode.DEFAULT;
   }
 
@@ -97,13 +98,15 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setSubmitHandler(() => {
-      const data = this._tripEventEditComponent.getData();
+      const formData = this._tripEventEditComponent.getData();
+      const newTripEvent = TripEventModel.parse(formData);
+
       this._dispatch({
-        type: ActionType.UPDATE,
+        type: this._mode === Mode.EDIT ? ActionType.UPDATE : ActionType.ADD_NEW_EVENT,
         payload: {
           id: tripEvent.id,
           controller: this,
-          newData: data
+          newData: newTripEvent
         }});
     });
 
@@ -120,22 +123,16 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
-      if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
-        this._dispatch({
-          type: ActionType.REMOVE_NEW_EVENT,
-        });
-      } else {
-        this._dispatch({
-          type: ActionType.DELETE,
-          payload: {
-            id: tripEvent.id
-          }
-        });
-      }
+      this._dispatch({
+        type: this._mode === Mode.EDIT ? ActionType.DELETE : ActionType.REMOVE_NEW_EVENT,
+        payload: {
+          id: tripEvent.id
+        }
+      });
     });
   }
 
-  _onEscKeyDown(evt) {
+  _escKeyDownHandler(evt) {
     if (isEscKey(evt)) {
       if (this._mode === Mode.ADD || this._mode === Mode.FIRST) {
         this._dispatch({

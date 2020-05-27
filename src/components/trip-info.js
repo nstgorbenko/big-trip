@@ -66,7 +66,7 @@ const createTripInfoTemplate = (tripEvents) => {
 };
 
 export default class TripInfo extends AbstractComponent {
-  constructor(tripEvents) {
+  constructor(tripEvents = []) {
     super();
 
     this._tripEvents = tripEvents;

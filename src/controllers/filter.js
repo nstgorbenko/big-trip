@@ -10,10 +10,10 @@ export default class Filter {
 
     this._filterComponent = null;
 
-    this._onDataChange = this._onDataChange.bind(this);
-    this._onFilterChange = this._onFilterChange.bind(this);
+    this._dataChangeHandler = this._dataChangeHandler.bind(this);
+    this._filterChangeHandler = this._filterChangeHandler.bind(this);
 
-    this._tripEventsModel.addDataChangeHandler(this._onDataChange);
+    this._tripEventsModel.addDataChangeHandler(this._dataChangeHandler);
   }
 
   render() {
@@ -31,7 +31,7 @@ export default class Filter {
 
     const oldFilterComponent = this._filterComponent;
     this._filterComponent = new FilterComponent(filters, activeFilter);
-    this._filterComponent.setChangeHandler(this._onFilterChange);
+    this._filterComponent.setChangeHandler(this._filterChangeHandler);
 
     if (oldFilterComponent !== null) {
       replace(this._filterComponent, oldFilterComponent);
@@ -54,12 +54,12 @@ export default class Filter {
     this._filterComponent.show();
   }
 
-  _onFilterChange(filterType) {
+  _filterChangeHandler(filterType) {
     this._tripEventsModel.setFilter(filterType);
   }
 
-  _onDataChange() {
-    if (this._tripEventsModel.isEmpty()) {
+  _dataChangeHandler() {
+    if (this._tripEventsModel.isEmpty() && this._filterComponent !== null) {
       this.setDefault();
     }
     this.render();
