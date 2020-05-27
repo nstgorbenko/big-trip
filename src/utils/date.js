@@ -19,5 +19,5 @@ export const formatDuration = (endTime, startTime = 0) => {
     return `${addZero(hours)}H ${addZero(minutes)}M`;
   }
 
-  return `${addZero(minutes)}M`;
+  return minutes > 0 ? `${addZero(minutes)}M` : ``;
 };

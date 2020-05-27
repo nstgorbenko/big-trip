@@ -102,7 +102,7 @@ const createTripEventEditTemplate = (tripEvent, options = {}) => {
   const favorite = isFavorite ? `checked` : ``;
 
   return (
-    `<form class="trip-events__item  event  event--edit" action="#" method="post">
+    `<form class="trip-events__item  event event--edit" action="#" method="post">
       <header class="event__header">
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -222,7 +222,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
       end: this._end,
       offers: this._offers,
       allDestinations: this._destinationsModel.get() || [],
-      allOffers: this._offersModel.get() || []
+      allOffers: this._offersModel.get() || [],
     });
   }
 
@@ -245,6 +245,21 @@ export default class TripEventEdit extends AbstractSmartComponent {
       "offers": checkedOffers,
       "is_favorite": formData.has(`event-favorite`),
     };
+  }
+
+  setDisabled(value) {
+    this.getElement().querySelectorAll(`input, button`)
+      .forEach((elem) => (elem.disabled = value));
+  }
+
+  setDeleteButtonText(text) {
+    const deleteButton = this.getElement().querySelector(`.event__reset-btn`);
+    deleteButton.innerHTML = text;
+  }
+
+  setSubmitButtonText(text) {
+    const submitButton = this.getElement().querySelector(`.event__save-btn`);
+    submitButton.innerHTML = text;
   }
 
   setFavoriteButtonClickHandler(handler) {

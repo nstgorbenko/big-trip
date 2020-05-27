@@ -7,6 +7,11 @@ export const ActionType = {
   UPDATE: `UPDATE`,
 };
 
+export const DeleteButtonText = {
+  DEFAULT: `Delete`,
+  CALL: `Deleting...`
+};
+
 export const FilterType = {
   ALL: `everything`,
   FUTURE: `future`,
@@ -44,6 +49,11 @@ export const SortType = {
   DEFAULT: `sort-event`,
   TIME: `sort-time`,
   PRICE: `sort-price`,
+};
+
+export const SubmitButtonText = {
+  DEFAULT: `Save`,
+  CALL: `Saving...`
 };
 
 export const TRANSFER_EVENTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];

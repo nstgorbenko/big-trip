@@ -40,21 +40,43 @@ export default class API {
       body: JSON.stringify(newData.convertToRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
+      .then((response) => response.json())
       .then(TripEvent.parse);
+  }
+
+  createTripEvent(newData) {
+    return this._load({
+      url: Url.TRIP_EVENTS,
+      method: Method.POST,
+      body: JSON.stringify(newData.convertToRaw()),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+    .then((response) => response.json())
+    .then(TripEvent.parse);
+  }
+
+  deleteTripEvent(id) {
+    return this._load({
+      url: `${Url.TRIP_EVENTS}/${id}`,
+      method: Method.DELETE
+    });
   }
 
   _getTripEvents() {
     return this._load({url: Url.TRIP_EVENTS})
-      .then(TripEvent.parseAll);
+    .then((response) => response.json())
+    .then(TripEvent.parseAll);
   }
 
   _getDestinations() {
     return this._load({url: Url.DESTINATIONS})
+    .then((response) => response.json())
     .then(Destination.parseAll);
   }
 
   _getOffers() {
     return this._load({url: Url.OFFERS})
+    .then((response) => response.json())
     .then(Offer.parseAll);
   }
 
@@ -63,10 +85,8 @@ export default class API {
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
-      .then((response) => response.json())
       .catch((error) => {
         throw error;
       });
   }
 }
-

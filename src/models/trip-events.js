@@ -33,10 +33,7 @@ export default class TripEvents {
   }
 
   add(newEvent) {
-    const newTripEvent = Object.assign({}, newEvent, {
-      id: String(new Date() + Math.random())
-    });
-    this._tripEvents = [...this._tripEvents, newTripEvent];
+    this._tripEvents = [...this._tripEvents, newEvent];
     TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
