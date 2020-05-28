@@ -40,6 +40,7 @@ export default class Statistics {
     } else {
       render(container, this._statisticsComponent, RenderPosition.AFTEREND);
     }
+    this._statisticsComponent.resetData();
   }
 
   _dataChangeHandler() {

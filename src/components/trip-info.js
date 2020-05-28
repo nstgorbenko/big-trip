@@ -1,52 +1,43 @@
 import AbstractComponent from "./abstract-component.js";
-import {formatDay} from "../utils/date.js";
+import {formatDate} from "../utils/date.js";
 import {getTotalCost} from "../utils/cost.js";
+import {getSortedTripEvents} from "../utils/sort.js";
+import {SortType} from "../const.js";
 
-const getDiffItem = (majorPoints, minorPoints) => majorPoints.filter((point) => minorPoints.indexOf(point) < 0);
-
-const getTripTitle = (tripEvents) => {
-  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
-  const startPointName = sortedTripEvents[0].destination.name;
-  const endPointName = sortedTripEvents[sortedTripEvents.length - 1].destination.name;
-  const allPoints = Array.from(sortedTripEvents.reduce((points, tripEvent) => points.add(tripEvent.destination.name), new Set()));
-
-  if (allPoints.length === 1) {
-    return startPointName;
-  }
-  if (allPoints.length === 2 && startPointName !== endPointName) {
-    return `${startPointName} &mdash; ${endPointName}`;
-  }
-  if (allPoints.length === 2 && startPointName === endPointName) {
-    return `${startPointName} &mdash; ${allPoints[1]} &mdash; ${endPointName}`;
-  }
-  if (allPoints.length === 3 && startPointName !== endPointName) {
-    const middlePointName = getDiffItem(allPoints, [startPointName, endPointName])[0];
-    return `${startPointName} &mdash; ${middlePointName} &mdash; ${endPointName}`;
-  }
-
-  return `${startPointName} &mdash; ... &mdash; ${endPointName}`;
+const Separator = {
+  DASH: ` — `,
+  ELLIPSIS: ` — … — `,
 };
 
-const getTripDates = (tripEvents) => {
-  const sortedTripEvents = tripEvents.sort((a, b) => a.start - b.start);
-  const startPointDate = formatDay(sortedTripEvents[0].start);
-  const startPointMonth = startPointDate.slice(0, 3);
+const getFirstItem = (array) => array[0];
+const getLastItem = (array) => array[array.length - 1];
 
-  const endPointDate = formatDay(sortedTripEvents[sortedTripEvents.length - 1].end);
-  const endPointMonth = endPointDate.slice(0, 3);
-  const endPointDay = endPointDate.slice(-2);
+const getTripTitle = (sortedTripEvents) => {
+  const allTripEvents = sortedTripEvents.map(({destination}) => destination.name);
+  const firstEventName = getFirstItem(allTripEvents);
+  const lastEventName = getLastItem(allTripEvents);
 
-  if (startPointDate === endPointDate) {
-    return startPointDate;
+  if (sortedTripEvents.length <= 3) {
+    return allTripEvents.join(Separator.DASH);
   }
-  if (startPointMonth === endPointMonth) {
-    return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDay}`;
-  }
+  return `${firstEventName} ${Separator.ELLIPSIS} ${lastEventName}`;
+};
 
-  return `${startPointDate}&nbsp;&mdash;&nbsp;${endPointDate}`;
+const getTripDates = (sortedTripEvents) => {
+  const firstEvent = getFirstItem(sortedTripEvents);
+  const firstEventDate = formatDate(firstEvent.start);
+
+  const lastEvent = getLastItem(sortedTripEvents);
+  const lastEventDate = formatDate(lastEvent.end);
+
+  if (firstEventDate === lastEventDate) {
+    return firstEventDate;
+  }
+  return `${firstEventDate} ${Separator.DASH} ${lastEventDate}`;
 };
 
 const createTripInfoTemplate = (tripEvents) => {
+  const sortedTripEvents = getSortedTripEvents(tripEvents, SortType.DEFAULT);
   const noEvents = tripEvents.length === 0;
   const totalCost = getTotalCost(tripEvents);
 
@@ -54,9 +45,9 @@ const createTripInfoTemplate = (tripEvents) => {
     `<section class="trip-main__trip-info  trip-info">
       ${noEvents ? `` :
       `<div class="trip-info__main">
-        <h1 class="trip-info__title">${getTripTitle(tripEvents)}</h1>
+        <h1 class="trip-info__title">${getTripTitle(sortedTripEvents)}</h1>
 
-        <p class="trip-info__dates">${getTripDates(tripEvents)}</p>
+        <p class="trip-info__dates">${getTripDates(sortedTripEvents)}</p>
       </div>`}
       <p class="trip-info__cost">
         Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
@@ -70,6 +61,10 @@ export default class TripInfo extends AbstractComponent {
     super();
 
     this._tripEvents = tripEvents;
+  }
+
+  resetData() {
+    this._tripEvents = null;
   }
 
   getTemplate() {

@@ -3,15 +3,15 @@ export default class Destinations {
     this._destinations = [];
   }
 
-  find(destinationName) {
-    return this._destinations.find(({name}) => name === destinationName) || null;
-  }
-
   set(destinations) {
     this._destinations = Array.from(destinations);
   }
 
   get() {
     return this._destinations;
+  }
+
+  find(destinationName) {
+    return this._destinations.find(({name}) => name === destinationName) || null;
   }
 }

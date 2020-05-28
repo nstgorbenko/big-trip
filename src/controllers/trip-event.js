@@ -62,10 +62,10 @@ export default class TripEvent {
   }
 
   shake() {
-    this._tripEventEditComponent.getElement().style = `animation: shake ${SHAKE_ANIMATION_TIMEOUT / 1000}s; border: 3px solid red`;
+    this._tripEventEditComponent.animate(true);
 
     setTimeout(() => {
-      this._tripEventEditComponent.getElement().style = ``;
+      this._tripEventEditComponent.animate(false);
       this._tripEventEditComponent.setDisabled(false);
       this._tripEventEditComponent.setSubmitButtonText(SubmitButtonText.DEFAULT);
       if (this._mode === Mode.EDIT) {
@@ -117,7 +117,7 @@ export default class TripEvent {
       const newTripEvent = TripEventModel.parse(formData);
 
       this._tripEventEditComponent.setDisabled(true);
-      this._tripEventEditComponent.setSubmitButtonText(SubmitButtonText.CALL);
+      this._tripEventEditComponent.setSubmitButtonText(SubmitButtonText.PENDING);
 
       this._dispatch({
         type: this._mode === Mode.EDIT ? ActionType.UPDATE : ActionType.ADD_NEW_EVENT,
@@ -129,21 +129,22 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setFavoriteButtonClickHandler(() => {
+      const newTripEvent = TripEventModel.clone(tripEvent);
+      newTripEvent.isFavorite = !newTripEvent.isFavorite;
+
       this._dispatch({
         type: ActionType.ADD_TO_FAVORITE,
         payload: {
           id: tripEvent.id,
           controller: this,
-          newData: Object.assign({}, tripEvent, {
-            isFavorite: !tripEvent.isFavorite
-          })
+          newData: newTripEvent
         }});
     });
 
     this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
       if (this._mode === Mode.EDIT) {
         this._tripEventEditComponent.setDisabled(true);
-        this._tripEventEditComponent.setDeleteButtonText(DeleteButtonText.CALL);
+        this._tripEventEditComponent.setDeleteButtonText(DeleteButtonText.PENDING);
       }
 
       this._dispatch({

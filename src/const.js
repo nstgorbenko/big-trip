@@ -9,7 +9,7 @@ export const ActionType = {
 
 export const DeleteButtonText = {
   DEFAULT: `Delete`,
-  CALL: `Deleting...`
+  PENDING: `Deleting...`
 };
 
 export const FilterType = {
@@ -53,7 +53,7 @@ export const SortType = {
 
 export const SubmitButtonText = {
   DEFAULT: `Save`,
-  CALL: `Saving...`
+  PENDING: `Saving...`
 };
 
 export const TRANSFER_EVENTS = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`];

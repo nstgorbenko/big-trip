@@ -147,18 +147,21 @@ export default class Statistics extends AbstractComponent {
     return createStatisticsTemplate();
   }
 
+  resetData() {
+    this._tripEvents = null;
+  }
+
   _renderCharts() {
     const element = this.getElement();
-    const tripEvents = this._tripEvents;
-    const tripTransportEvents = tripEvents.filter(({type}) => TRANSFER_EVENTS.indexOf(type) > 0);
+    const tripTransportEvents = this._tripEvents.filter(({type}) => TRANSFER_EVENTS.indexOf(type) > 0);
 
     const moneyCtx = element.querySelector(`.statistics__chart--money`);
     const transportCtx = element.querySelector(`.statistics__chart--transport`);
     const timeCtx = element.querySelector(`.statistics__chart--time`);
 
-    const moneyData = getChartData(tripEvents, (tripEvent) => tripEvent.basePrice);
+    const moneyData = getChartData(this._tripEvents, (tripEvent) => tripEvent.basePrice);
     const transportData = getChartData(tripTransportEvents, () => 1);
-    const timeData = getChartData(tripEvents, (tripEvent) => moment.duration(tripEvent.end - tripEvent.start));
+    const timeData = getChartData(this._tripEvents, (tripEvent) => moment.duration(tripEvent.end - tripEvent.start));
 
     this._resetCharts();
 

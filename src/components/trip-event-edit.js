@@ -4,6 +4,8 @@ import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date.js";
 import {createNewEvent} from "../utils/common.js";
 
+const ANIMATION_DURATION = 0.6;
+
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
     const lowercaseEventType = eventType.toLowerCase();
@@ -247,19 +249,27 @@ export default class TripEventEdit extends AbstractSmartComponent {
     };
   }
 
+  animate(value) {
+    this.getElement().style.animation = value ? `shake ${ANIMATION_DURATION}s` : ``;
+  }
+
   setDisabled(value) {
-    this.getElement().querySelectorAll(`input, button`)
-      .forEach((elem) => (elem.disabled = value));
+    const elements = this.getElement().querySelectorAll(`input, button`);
+    if (value) {
+      elements.forEach((element) => (element.setAttribute(`disabled`, `disabled`)));
+    } else {
+      elements.forEach((element) => (element.removeAttribute(`disabled`)));
+    }
   }
 
   setDeleteButtonText(text) {
     const deleteButton = this.getElement().querySelector(`.event__reset-btn`);
-    deleteButton.innerHTML = text;
+    deleteButton.textContent = text;
   }
 
   setSubmitButtonText(text) {
     const submitButton = this.getElement().querySelector(`.event__save-btn`);
-    submitButton.innerHTML = text;
+    submitButton.textContent = text;
   }
 
   setFavoriteButtonClickHandler(handler) {

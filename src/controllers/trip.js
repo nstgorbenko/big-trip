@@ -207,8 +207,13 @@ export default class Trip {
   }
 
   _handleAddToFavoriteAction({payload}) {
-    this._tripEventsModel.update(payload.id, payload.newData);
-    payload.controller.render(payload.newData, Mode.EDIT);
+    this._api.updateTripEvent(payload.id, payload.newData)
+      .then((tripEvent) => {
+        const isSuccess = this._tripEventsModel.update(payload.id, tripEvent);
+        if (isSuccess) {
+          payload.controller.render(tripEvent, Mode.EDIT);
+        }
+      });
   }
 
   _handleDeleteAction({payload}) {

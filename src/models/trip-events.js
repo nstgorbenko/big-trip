@@ -10,17 +10,17 @@ export default class TripEvents {
     this._filterChangeHandlers = [];
   }
 
+  set(tripEvents) {
+    this._tripEvents = Array.from(tripEvents);
+    TripEvents.callHandlers(this._dataChangeHandlers);
+  }
+
   getAll() {
     return this._tripEvents;
   }
 
   get() {
     return getEventsByFilter(this._tripEvents, this._activeFilterType);
-  }
-
-  set(tripEvents) {
-    this._tripEvents = Array.from(tripEvents);
-    TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
   setFilter(filterType) {

@@ -11,7 +11,7 @@ import TripInfoController from "./controllers/trip-info.js";
 import {render} from "./utils/dom.js";
 import {MenuItem, RenderPosition} from "./const.js";
 
-const AUTHORIZATION = `Basic jzkskbfjkse6788gisnfkj=`;
+const AUTHORIZATION = `Basic jzkskbfjkse6787gisnfkj=`;
 const END_POINT = `https://11.ecmascript.pages.academy/big-trip`;
 
 const tripBoard = document.querySelector(`.trip-events`);

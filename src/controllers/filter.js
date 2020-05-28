@@ -1,7 +1,7 @@
 import FilterComponent from "../components/filter.js";
 import {FilterType} from "../const.js";
 import {render, replace, remove} from "../utils/dom.js";
-import {getEventsByFilter} from "../utils/filter.js";
+import {checkEnabledFilter} from "../utils/filter.js";
 
 export default class Filter {
   constructor(container, tripEventsModel) {
@@ -24,8 +24,8 @@ export default class Filter {
     const filters = Object.values(FilterType).map((filterType) => {
       return {
         name: filterType,
-        count: getEventsByFilter(allEvents, filterType).length,
-        checked: filterType === activeFilter,
+        isEnabled: checkEnabledFilter(allEvents, filterType),
+        isChecked: filterType === activeFilter,
       };
     });
 
