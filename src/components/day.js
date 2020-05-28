@@ -1,5 +1,5 @@
 import AbstractComponent from "./abstract-component.js";
-import {formatDay} from "../utils/date.js";
+import {formatDate} from "../utils/date.js";
 
 const createDayTemplate = (day, counter = 0) => {
   const isCertainDay = counter > 0;
@@ -9,7 +9,7 @@ const createDayTemplate = (day, counter = 0) => {
       <div class="day__info">
     ${isCertainDay ?
       `<span class="day__counter">${counter}</span>
-      <time class="day__date" datetime=${day}>${formatDay(day)}</time>` : ``}
+      <time class="day__date" datetime=${day}>${formatDate(day)}</time>` : ``}
       </div>
     </li>`
   );

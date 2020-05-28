@@ -1,9 +1,11 @@
 import TripEventModel from "../models/trip-event.js";
 import TripEventComponent from "../components/trip-event.js";
 import TripEventEditComponent from "../components/trip-event-edit.js";
-import {ActionType, Mode, RenderPosition} from "../const.js";
+import {ActionType, DeleteButtonText, Mode, RenderPosition, SubmitButtonText} from "../const.js";
 import {isEscKey} from "../utils/common.js";
 import {remove, render, replace} from "../utils/dom.js";
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 export default class TripEvent {
   constructor(container, destinationsModel, offersModel, dispatch) {
@@ -59,6 +61,19 @@ export default class TripEvent {
     document.removeEventListener(`keydown`, this._escKeyDownHandler);
   }
 
+  shake() {
+    this._tripEventEditComponent.animate(true);
+
+    setTimeout(() => {
+      this._tripEventEditComponent.animate(false);
+      this._tripEventEditComponent.setDisabled(false);
+      this._tripEventEditComponent.setSubmitButtonText(SubmitButtonText.DEFAULT);
+      if (this._mode === Mode.EDIT) {
+        this._tripEventEditComponent.setDeleteButtonText(DeleteButtonText.DEFAULT);
+      }
+    }, SHAKE_ANIMATION_TIMEOUT);
+  }
+
   setDefaultView() {
     if (this._mode !== Mode.DEFAULT) {
       this._replaceEditToDefault();
@@ -101,6 +116,9 @@ export default class TripEvent {
       const formData = this._tripEventEditComponent.getData();
       const newTripEvent = TripEventModel.parse(formData);
 
+      this._tripEventEditComponent.setDisabled(true);
+      this._tripEventEditComponent.setSubmitButtonText(SubmitButtonText.PENDING);
+
       this._dispatch({
         type: this._mode === Mode.EDIT ? ActionType.UPDATE : ActionType.ADD_NEW_EVENT,
         payload: {
@@ -111,22 +129,29 @@ export default class TripEvent {
     });
 
     this._tripEventEditComponent.setFavoriteButtonClickHandler(() => {
+      const newTripEvent = TripEventModel.clone(tripEvent);
+      newTripEvent.isFavorite = !newTripEvent.isFavorite;
+
       this._dispatch({
         type: ActionType.ADD_TO_FAVORITE,
         payload: {
           id: tripEvent.id,
           controller: this,
-          newData: Object.assign({}, tripEvent, {
-            isFavorite: !tripEvent.isFavorite
-          })
+          newData: newTripEvent
         }});
     });
 
     this._tripEventEditComponent.setDeleteButtonClickHandler(() => {
+      if (this._mode === Mode.EDIT) {
+        this._tripEventEditComponent.setDisabled(true);
+        this._tripEventEditComponent.setDeleteButtonText(DeleteButtonText.PENDING);
+      }
+
       this._dispatch({
         type: this._mode === Mode.EDIT ? ActionType.DELETE : ActionType.REMOVE_NEW_EVENT,
         payload: {
-          id: tripEvent.id
+          id: tripEvent.id,
+          controller: this
         }
       });
     });

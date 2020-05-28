@@ -5,7 +5,7 @@ export const formatDateToDayDatetime = (date) => moment(date).format(`YYYY-MM-DD
 
 export const formatDateToEventEdit = (date) => moment(date).format(`DD/MM/YY HH:mm`);
 
-export const formatDay = (date) => moment(date).format(`MMM DD`);
+export const formatDate = (date) => moment(date).format(`DD MMM`);
 
 export const formatTime = (date) => moment(date).format(`HH:mm`);
 
@@ -19,5 +19,5 @@ export const formatDuration = (endTime, startTime = 0) => {
     return `${addZero(hours)}H ${addZero(minutes)}M`;
   }
 
-  return `${addZero(minutes)}M`;
+  return minutes > 0 ? `${addZero(minutes)}M` : ``;
 };

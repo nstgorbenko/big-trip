@@ -31,6 +31,10 @@ export default class TripEvent {
     };
   }
 
+  static clone(tripEvent) {
+    return new TripEvent(tripEvent.convertToRaw());
+  }
+
   static parse(tripEvent) {
     return new TripEvent(tripEvent);
   }

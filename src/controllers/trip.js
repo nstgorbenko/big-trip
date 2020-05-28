@@ -207,21 +207,31 @@ export default class Trip {
   }
 
   _handleAddToFavoriteAction({payload}) {
-    this._tripEventsModel.update(payload.id, payload.newData);
-    payload.controller.render(payload.newData, Mode.EDIT);
+    this._api.updateTripEvent(payload.id, payload.newData)
+      .then((tripEvent) => {
+        const isSuccess = this._tripEventsModel.update(payload.id, tripEvent);
+        if (isSuccess) {
+          payload.controller.render(tripEvent, Mode.EDIT);
+        }
+      });
   }
 
   _handleDeleteAction({payload}) {
-    const isSuccess = this._tripEventsModel.deleteEvent(payload.id);
-
-    if (!isSuccess) {
-      return;
-    }
-    if (this._tripEventsModel.isEmpty()) {
-      this._removeFirstBoard();
-      return;
-    }
-    this._updateEvents();
+    this._api.deleteTripEvent(payload.id)
+      .then(() => {
+        const isSuccess = this._tripEventsModel.deleteEvent(payload.id);
+        if (!isSuccess) {
+          return;
+        }
+        if (this._tripEventsModel.isEmpty()) {
+          this._removeFirstBoard();
+          return;
+        }
+        this._updateEvents();
+      })
+      .catch(() => {
+        payload.controller.shake();
+      });
   }
 
   _handleRemoveNewEventAction() {
@@ -246,19 +256,28 @@ export default class Trip {
         if (isSuccess) {
           this._updateEvents();
         }
+      })
+      .catch(() => {
+        payload.controller.shake();
       });
   }
 
   _handleAddNewEventAction({payload}) {
-    this._tripEventsModel.add(payload.newData);
-    this._removeNewEvent();
+    this._api.createTripEvent(payload.newData)
+      .then((tripEvent) => {
+        this._tripEventsModel.add(tripEvent);
+        this._removeNewEvent();
 
-    const tripEvents = this._tripEventsModel.getAll();
-    if (tripEvents.length === 1) {
-      this._renderFirstBoard(tripEvents);
-    } else {
-      this._updateEvents();
-    }
+        const tripEvents = this._tripEventsModel.getAll();
+        if (tripEvents.length === 1) {
+          this._renderFirstBoard(tripEvents);
+        } else {
+          this._updateEvents();
+        }
+      })
+      .catch(() => {
+        payload.controller.shake();
+      });
   }
 
   _dispatch(action) {
@@ -269,7 +288,7 @@ export default class Trip {
       case ActionType.DELETE:
         this._handleDeleteAction(action);
         break;
-      case ActionType.NEW_EVENT:
+      case ActionType.ADD_NEW_EVENT:
         this._handleAddNewEventAction(action);
         break;
       case ActionType.REMOVE_NEW_EVENT:

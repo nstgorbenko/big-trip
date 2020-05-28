@@ -20,3 +20,24 @@ export const getEventsByFilter = (tripEvents, filterType) => {
       throw new Error(`Unknown filter type: ${filterType}`);
   }
 };
+
+const checkFutureEvents = (tripEvents, now) => {
+  return tripEvents.some(({start}) => start > now);
+};
+
+const checkPastEvents = (tripEvents, now) => {
+  return tripEvents.some(({start}) => start < now);
+};
+
+export const checkEnabledFilter = (tripEvents, filterType) => {
+  switch (filterType) {
+    case FilterType.ALL:
+      return tripEvents.length > 0;
+    case FilterType.FUTURE:
+      return checkFutureEvents(tripEvents, Date.now());
+    case FilterType.PAST:
+      return checkPastEvents(tripEvents, Date.now());
+    default:
+      throw new Error(`Unknown filter type: ${filterType}`);
+  }
+};

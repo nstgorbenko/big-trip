@@ -10,17 +10,17 @@ export default class TripEvents {
     this._filterChangeHandlers = [];
   }
 
+  set(tripEvents) {
+    this._tripEvents = Array.from(tripEvents);
+    TripEvents.callHandlers(this._dataChangeHandlers);
+  }
+
   getAll() {
     return this._tripEvents;
   }
 
   get() {
     return getEventsByFilter(this._tripEvents, this._activeFilterType);
-  }
-
-  set(tripEvents) {
-    this._tripEvents = Array.from(tripEvents);
-    TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
   setFilter(filterType) {
@@ -33,10 +33,7 @@ export default class TripEvents {
   }
 
   add(newEvent) {
-    const newTripEvent = Object.assign({}, newEvent, {
-      id: String(new Date() + Math.random())
-    });
-    this._tripEvents = [...this._tripEvents, newTripEvent];
+    this._tripEvents = [...this._tripEvents, newEvent];
     TripEvents.callHandlers(this._dataChangeHandlers);
   }
 

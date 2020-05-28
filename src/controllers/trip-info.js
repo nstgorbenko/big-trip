@@ -26,6 +26,7 @@ export default class TripInfo {
     } else {
       render(container, this._tripInfoComponent, RenderPosition.AFTERBEGIN);
     }
+    this._tripInfoComponent.resetData();
   }
 
   _dataChangeHandler() {

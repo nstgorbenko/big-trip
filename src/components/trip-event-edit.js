@@ -4,6 +4,8 @@ import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date.js";
 import {createNewEvent} from "../utils/common.js";
 
+const ANIMATION_DURATION = 0.6;
+
 const createEventsTypeMarkup = (eventTypes, currentType) => {
   return eventTypes.map((eventType) => {
     const lowercaseEventType = eventType.toLowerCase();
@@ -102,7 +104,7 @@ const createTripEventEditTemplate = (tripEvent, options = {}) => {
   const favorite = isFavorite ? `checked` : ``;
 
   return (
-    `<form class="trip-events__item  event  event--edit" action="#" method="post">
+    `<form class="trip-events__item  event event--edit" action="#" method="post">
       <header class="event__header">
         <div class="event__type-wrapper">
           <label class="event__type  event__type-btn" for="event-type-toggle-1">
@@ -222,7 +224,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
       end: this._end,
       offers: this._offers,
       allDestinations: this._destinationsModel.get() || [],
-      allOffers: this._offersModel.get() || []
+      allOffers: this._offersModel.get() || [],
     });
   }
 
@@ -245,6 +247,29 @@ export default class TripEventEdit extends AbstractSmartComponent {
       "offers": checkedOffers,
       "is_favorite": formData.has(`event-favorite`),
     };
+  }
+
+  animate(value) {
+    this.getElement().style.animation = value ? `shake ${ANIMATION_DURATION}s` : ``;
+  }
+
+  setDisabled(value) {
+    const elements = this.getElement().querySelectorAll(`input, button`);
+    if (value) {
+      elements.forEach((element) => (element.setAttribute(`disabled`, `disabled`)));
+    } else {
+      elements.forEach((element) => (element.removeAttribute(`disabled`)));
+    }
+  }
+
+  setDeleteButtonText(text) {
+    const deleteButton = this.getElement().querySelector(`.event__reset-btn`);
+    deleteButton.textContent = text;
+  }
+
+  setSubmitButtonText(text) {
+    const submitButton = this.getElement().querySelector(`.event__save-btn`);
+    submitButton.textContent = text;
   }
 
   setFavoriteButtonClickHandler(handler) {

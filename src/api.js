@@ -2,6 +2,11 @@ import Destination from "./models/destination.js";
 import Offer from "./models/offer.js";
 import TripEvent from "./models/trip-event.js";
 
+const Code = {
+  SUCCESS: 200,
+  REDIRECTION: 300
+};
+
 const Method = {
   GET: `GET`,
   POST: `POST`,
@@ -16,7 +21,7 @@ const Url = {
 };
 
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= Code.SUCCESS && response.status < Code.REDIRECTION) {
     return response;
   }
   throw new Error(`${response.status}: ${response.statusText}`);
@@ -40,21 +45,43 @@ export default class API {
       body: JSON.stringify(newData.convertToRaw()),
       headers: new Headers({"Content-Type": `application/json`})
     })
+      .then(API.convertToJson)
       .then(TripEvent.parse);
+  }
+
+  createTripEvent(newData) {
+    return this._load({
+      url: Url.TRIP_EVENTS,
+      method: Method.POST,
+      body: JSON.stringify(newData.convertToRaw()),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+    .then(API.convertToJson)
+    .then(TripEvent.parse);
+  }
+
+  deleteTripEvent(id) {
+    return this._load({
+      url: `${Url.TRIP_EVENTS}/${id}`,
+      method: Method.DELETE
+    });
   }
 
   _getTripEvents() {
     return this._load({url: Url.TRIP_EVENTS})
-      .then(TripEvent.parseAll);
+    .then(API.convertToJson)
+    .then(TripEvent.parseAll);
   }
 
   _getDestinations() {
     return this._load({url: Url.DESTINATIONS})
+    .then(API.convertToJson)
     .then(Destination.parseAll);
   }
 
   _getOffers() {
     return this._load({url: Url.OFFERS})
+    .then(API.convertToJson)
     .then(Offer.parseAll);
   }
 
@@ -63,10 +90,12 @@ export default class API {
 
     return fetch(`${this._endPoint}/${url}`, {method, body, headers})
       .then(checkStatus)
-      .then((response) => response.json())
       .catch((error) => {
         throw error;
       });
   }
-}
 
+  static convertToJson(response) {
+    return response.json();
+  }
+}
