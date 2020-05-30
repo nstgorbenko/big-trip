@@ -35,3 +35,11 @@ export const replace = (newComponent, oldComponent) => {
   oldComponent.getElement().replaceWith(newComponent.getElement());
 };
 
+export const setDisabled = (element) => {
+  element.disabled = true;
+};
+
+export const unsetDisabled = (element) => {
+  element.disabled = false;
+};
+

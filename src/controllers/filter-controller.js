@@ -3,7 +3,7 @@ import {FilterType} from "../const.js";
 import {render, replace, remove} from "../utils/dom.js";
 import {checkEnabledFilter} from "../utils/filter.js";
 
-export default class Filter {
+export default class FilterController {
   constructor(container, tripEventsModel) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;

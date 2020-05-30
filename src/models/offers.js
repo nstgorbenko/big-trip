@@ -1,6 +1,6 @@
 export default class Offers {
   constructor() {
-    this._offers = [];
+    this._items = [];
   }
 
   set(offers) {
@@ -9,11 +9,11 @@ export default class Offers {
       return resultOffers;
     }, {});
 
-    this._offers = offersData;
+    this._items = offersData;
   }
 
   get() {
-    return this._offers;
+    return this._items;
   }
 }
 

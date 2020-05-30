@@ -2,7 +2,7 @@ import TripInfoComponent from "../components/trip-info.js";
 import {render, replace, remove} from "../utils/dom.js";
 import {RenderPosition} from "../const.js";
 
-export default class TripInfo {
+export default class TripInfoController {
   constructor(container, tripEventsModel) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;
@@ -18,7 +18,8 @@ export default class TripInfo {
     const tripEvents = this._tripEventsModel.getAll();
 
     const oldTripInfoComponent = this._tripInfoComponent;
-    this._tripInfoComponent = new TripInfoComponent(tripEvents);
+    this._tripInfoComponent = new TripInfoComponent();
+    this._tripInfoComponent.update(tripEvents);
 
     if (oldTripInfoComponent !== null) {
       replace(this._tripInfoComponent, oldTripInfoComponent);
@@ -26,7 +27,6 @@ export default class TripInfo {
     } else {
       render(container, this._tripInfoComponent, RenderPosition.AFTERBEGIN);
     }
-    this._tripInfoComponent.resetData();
   }
 
   _dataChangeHandler() {

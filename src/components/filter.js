@@ -26,12 +26,12 @@ export default class Filter extends AbstractComponent {
   constructor(filters = [], activeFilter = FilterType.ALL) {
     super();
 
-    this._filters = filters;
+    this._items = filters;
     this._activeType = activeFilter;
   }
 
   getTemplate() {
-    return createFilterTemplate(this._filters);
+    return createFilterTemplate(this._items);
   }
 
   getActiveType() {

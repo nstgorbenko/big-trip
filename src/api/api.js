@@ -1,6 +1,6 @@
-import Destination from "./models/destination.js";
-import Offer from "./models/offer.js";
-import TripEvent from "./models/trip-event.js";
+import Destination from "../models/destination.js";
+import Offer from "../models/offer.js";
+import TripEvent from "../models/trip-event.js";
 
 const Code = {
   SUCCESS: 200,
@@ -17,7 +17,8 @@ const Method = {
 const Url = {
   TRIP_EVENTS: `points`,
   DESTINATIONS: `destinations`,
-  OFFERS: `offers`
+  OFFERS: `offers`,
+  SYNC_TRIP_EVENTS: `points/sync`
 };
 
 const checkStatus = (response) => {
@@ -65,6 +66,16 @@ export default class API {
       url: `${Url.TRIP_EVENTS}/${id}`,
       method: Method.DELETE
     });
+  }
+
+  sync(tripEvents) {
+    return this._load({
+      url: Url.SYNC_TRIP_EVENTS,
+      method: Method.POST,
+      body: JSON.stringify(tripEvents),
+      headers: new Headers({"Content-Type": `application/json`})
+    })
+    .then(API.convertToJson);
   }
 
   _getTripEvents() {
