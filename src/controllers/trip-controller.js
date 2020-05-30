@@ -2,7 +2,7 @@ import DayComponent from "../components/day.js";
 import EventsListComponent from "../components/events-list.js";
 import SortComponent from "../components/sort.js";
 import TripDaysComponent from "../components/trip-days.js";
-import TripEventController from "./trip-event.js";
+import TripEventController from "./trip-event-controller.js";
 import TripMessageComponent from "../components/trip-message.js";
 import {formatDateToDayDatetime} from "../utils/date.js";
 import {getSortedTripEvents} from "../utils/sort.js";
@@ -10,6 +10,8 @@ import {HIDDEN_CLASS} from "../const.js";
 import {ActionType, Message, Mode, SortType} from "../const.js";
 import {createNewEvent} from "../utils/common.js";
 import {remove, render} from "../utils/dom.js";
+
+const READY_MODE = `ready`;
 
 const groupEventsByDays = (someEvents) => {
   return someEvents.reduce((days, currentDay) => {
@@ -24,7 +26,7 @@ const groupEventsByDays = (someEvents) => {
   }, {});
 };
 
-export default class Trip {
+export default class TripController {
   constructor(container, tripEventsModel, destinationsModel, offersModel, api, newEventComponent) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;
@@ -35,6 +37,7 @@ export default class Trip {
 
     this._showedTripEvents = [];
     this._newEvent = null;
+    this._tripMode = null;
 
     this._tripDaysComponent = new TripDaysComponent();
     this._tripMessageComponent = null;
@@ -43,11 +46,14 @@ export default class Trip {
     this._dispatch = this._dispatch.bind(this);
     this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
     this._filterChangeHandler = this._filterChangeHandler.bind(this);
+    this._serverSyncHandler = this._serverSyncHandler.bind(this);
 
     this._tripEventsModel.addFilterChangeHandler(this._filterChangeHandler);
+    this._tripEventsModel.addServerSyncHandler(this._serverSyncHandler);
   }
 
   render() {
+    this._tripMode = READY_MODE;
     const tripEvents = this._tripEventsModel.getAll();
 
     if (this._tripEventsModel.isEmpty()) {
@@ -126,6 +132,9 @@ export default class Trip {
   }
 
   _removeNewEvent() {
+    if (this._newEvent === null) {
+      return;
+    }
     this._newEvent.destroy();
     this._newEvent = null;
     this._newEventComponent.setDisabled(false);
@@ -312,5 +321,12 @@ export default class Trip {
 
   _sortTypeChangeHandler(sortType) {
     this._updateEvents(sortType);
+  }
+
+  _serverSyncHandler() {
+    if (this._tripMode !== null) {
+      this._removeNewEvent();
+      this._updateEvents();
+    }
   }
 }

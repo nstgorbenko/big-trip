@@ -3,24 +3,26 @@ import {getEventsByFilter} from "../utils/filter.js";
 
 export default class TripEvents {
   constructor() {
-    this._tripEvents = [];
+    this._events = [];
     this._activeFilterType = FilterType.ALL;
 
     this._dataChangeHandlers = [];
     this._filterChangeHandlers = [];
+    this._serverSyncHandlers = [];
   }
 
   set(tripEvents) {
-    this._tripEvents = Array.from(tripEvents);
+    this._events = Array.from(tripEvents);
     TripEvents.callHandlers(this._dataChangeHandlers);
+    TripEvents.callHandlers(this._serverSyncHandlers);
   }
 
   getAll() {
-    return this._tripEvents;
+    return this._events;
   }
 
   get() {
-    return getEventsByFilter(this._tripEvents, this._activeFilterType);
+    return getEventsByFilter(this._events, this._activeFilterType);
   }
 
   setFilter(filterType) {
@@ -29,11 +31,11 @@ export default class TripEvents {
   }
 
   isEmpty() {
-    return this._tripEvents.length === 0;
+    return this._events.length === 0;
   }
 
   add(newEvent) {
-    this._tripEvents = [...this._tripEvents, newEvent];
+    this._events = [...this._events, newEvent];
     TripEvents.callHandlers(this._dataChangeHandlers);
   }
 
@@ -44,9 +46,9 @@ export default class TripEvents {
       return false;
     }
 
-    this._tripEvents = [
-      ...this._tripEvents.slice(0, index),
-      ...this._tripEvents.slice(index + 1)
+    this._events = [
+      ...this._events.slice(0, index),
+      ...this._events.slice(index + 1)
     ];
     TripEvents.callHandlers(this._dataChangeHandlers);
 
@@ -60,10 +62,10 @@ export default class TripEvents {
       return false;
     }
 
-    this._tripEvents = [
-      ...this._tripEvents.slice(0, index),
+    this._events = [
+      ...this._events.slice(0, index),
       updatedEvent,
-      ...this._tripEvents.slice(index + 1)
+      ...this._events.slice(index + 1)
     ];
     TripEvents.callHandlers(this._dataChangeHandlers);
 
@@ -78,8 +80,12 @@ export default class TripEvents {
     this._dataChangeHandlers.push(handler);
   }
 
+  addServerSyncHandler(handler) {
+    this._serverSyncHandlers.push(handler);
+  }
+
   _getEventIndex(id) {
-    return this._tripEvents.findIndex((tripEvent) => tripEvent.id === id);
+    return this._events.findIndex((tripEvent) => tripEvent.id === id);
   }
 
   static callHandlers(handlers) {

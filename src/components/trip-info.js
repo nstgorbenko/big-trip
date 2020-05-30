@@ -4,6 +4,7 @@ import {getTotalCost} from "../utils/cost.js";
 import {getSortedTripEvents} from "../utils/sort.js";
 import {SortType} from "../const.js";
 
+const DESTINATIONS_TRUNCATE = 3;
 const Separator = {
   DASH: ` — `,
   ELLIPSIS: ` — … — `,
@@ -14,13 +15,10 @@ const getLastItem = (array) => array[array.length - 1];
 
 const getTripTitle = (sortedTripEvents) => {
   const allTripEvents = sortedTripEvents.map(({destination}) => destination.name);
-  const firstEventName = getFirstItem(allTripEvents);
-  const lastEventName = getLastItem(allTripEvents);
 
-  if (sortedTripEvents.length <= 3) {
-    return allTripEvents.join(Separator.DASH);
-  }
-  return `${firstEventName} ${Separator.ELLIPSIS} ${lastEventName}`;
+  return sortedTripEvents.length > DESTINATIONS_TRUNCATE
+    ? `${getFirstItem(allTripEvents)} ${Separator.ELLIPSIS} ${getLastItem(allTripEvents)}`
+    : allTripEvents.join(Separator.DASH);
 };
 
 const getTripDates = (sortedTripEvents) => {
@@ -36,38 +34,43 @@ const getTripDates = (sortedTripEvents) => {
   return `${firstEventDate} ${Separator.DASH} ${lastEventDate}`;
 };
 
-const createTripInfoTemplate = (tripEvents) => {
-  const sortedTripEvents = getSortedTripEvents(tripEvents, SortType.DEFAULT);
-  const noEvents = tripEvents.length === 0;
-  const totalCost = getTotalCost(tripEvents);
-
+const createTripInfoTemplate = (title, dates, cost) => {
   return (
     `<section class="trip-main__trip-info  trip-info">
-      ${noEvents ? `` :
-      `<div class="trip-info__main">
-        <h1 class="trip-info__title">${getTripTitle(sortedTripEvents)}</h1>
+      <div class="trip-info__main">
+        <h1 class="trip-info__title">${title}</h1>
 
-        <p class="trip-info__dates">${getTripDates(sortedTripEvents)}</p>
-      </div>`}
+        <p class="trip-info__dates">${dates}</p>
+      </div>
       <p class="trip-info__cost">
-        Total: &euro;&nbsp;<span class="trip-info__cost-value">${totalCost}</span>
+        Total: &euro;&nbsp;<span class="trip-info__cost-value">${cost}</span>
       </p>
     </section>`
   );
 };
 
 export default class TripInfo extends AbstractComponent {
-  constructor(tripEvents = []) {
+  constructor() {
     super();
 
-    this._tripEvents = tripEvents;
-  }
-
-  resetData() {
-    this._tripEvents = null;
+    this._title = ``;
+    this._dates = ``;
+    this._cost = 0;
   }
 
   getTemplate() {
-    return createTripInfoTemplate(this._tripEvents);
+    return createTripInfoTemplate(this._title, this._dates, this._cost);
+  }
+
+  update(tripEvents) {
+    const sortedTripEvents = getSortedTripEvents(tripEvents, SortType.DEFAULT);
+
+    this._title = getTripTitle(sortedTripEvents);
+    this._dates = getTripDates(sortedTripEvents);
+    this._cost = getTotalCost(tripEvents);
+
+    this.getElement().querySelector(`.trip-info__title`).textContent = this._title;
+    this.getElement().querySelector(`.trip-info__dates`).textContent = this._dates;
+    this.getElement().querySelector(`.trip-info__cost-value`).textContent = this._cost;
   }
 }

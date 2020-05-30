@@ -7,7 +7,7 @@ import {remove, render, replace} from "../utils/dom.js";
 
 const SHAKE_ANIMATION_TIMEOUT = 600;
 
-export default class TripEvent {
+export default class TripEventController {
   constructor(container, destinationsModel, offersModel, dispatch) {
     this._container = container;
     this._destinationsModel = destinationsModel;

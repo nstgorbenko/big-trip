@@ -72,11 +72,11 @@ export default class TripEvent extends AbstractComponent {
   constructor(tripEvent = createNewEvent()) {
     super();
 
-    this._tripEvent = tripEvent;
+    this._item = tripEvent;
   }
 
   getTemplate() {
-    return createTripEventTemplate(this._tripEvent);
+    return createTripEventTemplate(this._item);
   }
 
   setRollupButtonClickHandler(handler) {

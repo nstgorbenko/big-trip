@@ -1,17 +1,17 @@
 export default class Destinations {
   constructor() {
-    this._destinations = [];
+    this._items = [];
   }
 
   set(destinations) {
-    this._destinations = Array.from(destinations);
+    this._items = Array.from(destinations);
   }
 
   get() {
-    return this._destinations;
+    return this._items;
   }
 
   find(destinationName) {
-    return this._destinations.find(({name}) => name === destinationName) || null;
+    return this._items.find(({name}) => name === destinationName) || null;
   }
 }

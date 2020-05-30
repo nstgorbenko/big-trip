@@ -1,8 +1,9 @@
 import AbstractSmartComponent from "./abstract-smart-component.js";
 import {createFlatpickr} from "../utils/flatpickr.js";
+import {createNewEvent} from "../utils/common.js";
 import {eventGroupToTypes, eventTypeToPreposition} from "../dict.js";
 import {formatDateToEventEdit} from "../utils/date.js";
-import {createNewEvent} from "../utils/common.js";
+import {setDisabled, unsetDisabled} from "../utils/dom.js";
 
 const ANIMATION_DURATION = 0.6;
 
@@ -195,7 +196,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   constructor(tripEvent = createNewEvent(), destinationsModel = [], offersModel = []) {
     super();
 
-    this._tripEvent = tripEvent;
+    this._item = tripEvent;
     this._destinationsModel = destinationsModel;
     this._offersModel = offersModel;
 
@@ -217,7 +218,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   getTemplate() {
-    return createTripEventEditTemplate(this._tripEvent, {
+    return createTripEventEditTemplate(this._item, {
       type: this._type,
       destination: this._destination,
       start: this._start,
@@ -238,7 +239,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
     const checkedOffers = offerInputs.map(({name, value}) => ({title: name, price: +value}));
 
     return {
-      "id": this._tripEvent.id,
+      "id": this._item.id,
       "type": formData.get(`event-type`),
       "destination": destination.convertToRaw(),
       "date_from": formData.get(`event-start-time`),
@@ -254,12 +255,8 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   setDisabled(value) {
-    const elements = this.getElement().querySelectorAll(`input, button`);
-    if (value) {
-      elements.forEach((element) => (element.setAttribute(`disabled`, `disabled`)));
-    } else {
-      elements.forEach((element) => (element.removeAttribute(`disabled`)));
-    }
+    this.getElement().querySelectorAll(`input, button`)
+      .forEach(value ? setDisabled : unsetDisabled);
   }
 
   setDeleteButtonText(text) {
@@ -323,7 +320,7 @@ export default class TripEventEdit extends AbstractSmartComponent {
   }
 
   reset() {
-    const tripEvent = this._tripEvent;
+    const tripEvent = this._item;
 
     this._type = tripEvent.type;
     this._destination = tripEvent.destination;

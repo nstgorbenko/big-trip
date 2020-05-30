@@ -11,10 +11,10 @@ export default class TripMessage extends AbstractComponent {
   constructor(message = ``) {
     super();
 
-    this._message = message;
+    this._text = message;
   }
 
   getTemplate() {
-    return createTripMessageTemplate(this._message);
+    return createTripMessageTemplate(this._text);
   }
 }

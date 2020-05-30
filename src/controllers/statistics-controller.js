@@ -2,12 +2,12 @@ import {remove, render, replace} from "../utils/dom.js";
 import {RenderPosition} from "../const.js";
 import StatisticsComponent from "../components/statistics.js";
 
-export default class Statistics {
+export default class StatisticsController {
   constructor(container, tripEventsModel) {
     this._container = container;
     this._tripEventsModel = tripEventsModel;
 
-    this._shouldChartUpdate = true;
+    this._isChartShouldUpdate = true;
     this._statisticsComponent = null;
 
     this._dataChangeHandler = this._dataChangeHandler.bind(this);
@@ -15,9 +15,9 @@ export default class Statistics {
   }
 
   show() {
-    if (this._shouldChartUpdate) {
+    if (this._isChartShouldUpdate) {
       this._render();
-      this._shouldChartUpdate = false;
+      this._isChartShouldUpdate = false;
     }
 
     this._statisticsComponent.show();
@@ -32,7 +32,8 @@ export default class Statistics {
     const tripEvents = this._tripEventsModel.getAll();
 
     const oldStatisticsComponent = this._statisticsComponent;
-    this._statisticsComponent = new StatisticsComponent(tripEvents);
+    this._statisticsComponent = new StatisticsComponent();
+    this._statisticsComponent.update(tripEvents);
 
     if (oldStatisticsComponent !== null) {
       replace(this._statisticsComponent, oldStatisticsComponent);
@@ -40,10 +41,9 @@ export default class Statistics {
     } else {
       render(container, this._statisticsComponent, RenderPosition.AFTEREND);
     }
-    this._statisticsComponent.resetData();
   }
 
   _dataChangeHandler() {
-    this._shouldChartUpdate = true;
+    this._isChartShouldUpdate = true;
   }
 }
