@@ -1,9 +1,8 @@
 import AbstractComponent from "./abstract-smart-component.js";
-import Chart from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {eventTypeToEmoji} from "../dict.js";
 import {HIDDEN_CLASS, TRANSFER_EVENTS} from "../const.js";
 import {formatDuration} from "../utils/date.js";
+import {makeChart} from "../utils/chart.js";
 import moment from "moment";
 
 const BAR_HEIGHT = 55;
@@ -43,71 +42,11 @@ const renderChart = (chartCtx, chartData, chartTitle, labelView) => {
       chartCtx.height = types.length * BAR_HEIGHT;
   }
 
-  return new Chart(chartCtx, {
-    plugins: [ChartDataLabels],
-    type: `horizontalBar`,
-    data: {
-      labels: types,
-      datasets: [{
-        data: values,
-        backgroundColor: `#ffffff`,
-        hoverBackgroundColor: `#ffffff`,
-        anchor: `start`,
-        barThickness: 44,
-        minBarLength: 70
-      }]
-    },
-    options: {
-      plugins: {
-        datalabels: {
-          font: {
-            size: 13,
-            weight: `bold`
-          },
-          color: `#000000`,
-          anchor: `end`,
-          align: `start`,
-          formatter: labelView
-        }
-      },
-      title: {
-        display: true,
-        text: chartTitle,
-        fontColor: `#000000`,
-        fontSize: 23,
-        position: `left`
-      },
-      scales: {
-        yAxes: [{
-          ticks: {
-            fontColor: `#000000`,
-            padding: 5,
-            fontSize: 13,
-            fontStyle: `bold`
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-        }],
-        xAxes: [{
-          ticks: {
-            display: false,
-            beginAtZero: true,
-          },
-          gridLines: {
-            display: false,
-            drawBorder: false
-          },
-        }],
-      },
-      legend: {
-        display: false
-      },
-      tooltips: {
-        enabled: false,
-      }
-    }
+  return makeChart(chartCtx, {
+    types,
+    values,
+    title: chartTitle,
+    formatter: labelView,
   });
 };
 
