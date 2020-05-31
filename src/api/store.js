@@ -57,11 +57,7 @@ export default class Store {
   }
 
   _getItems(storageKey) {
-    try {
-      return JSON.parse(this._storage.getItem(storageKey)) || {};
-    } catch (err) {
-      return {};
-    }
+    return JSON.parse(this._storage.getItem(storageKey));
   }
 
   _setItems(items, storageKey) {

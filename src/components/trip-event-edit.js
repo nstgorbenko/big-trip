@@ -44,8 +44,8 @@ const createDestinationsMarkup = (destinations) => {
 
 const getOffers = (allOffers, checkedOffers) =>
   allOffers.reduce((offers, currentOffer) => {
-    const isCheckedOffer = checkedOffers.some(({title}) =>
-      title === currentOffer.title);
+    const isCheckedOffer = checkedOffers.some(({title, price}) =>
+      title === currentOffer.title && price === currentOffer.price);
 
     currentOffer.isChecked = isCheckedOffer;
     offers.push(currentOffer);
