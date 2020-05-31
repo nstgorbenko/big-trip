@@ -10,8 +10,8 @@ const Separator = {
   ELLIPSIS: ` — … — `,
 };
 
-const getFirstItem = (array) => array[0];
-const getLastItem = (array) => array[array.length - 1];
+const getFirstItem = (items) => items[0];
+const getLastItem = (items) => items[items.length - 1];
 
 const getTripTitle = (sortedTripEvents) => {
   const allTripEvents = sortedTripEvents.map(({destination}) => destination.name);
